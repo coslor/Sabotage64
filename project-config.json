@@ -1,0 +1,16 @@
+{
+    "name": "Satobage",
+    "description": "Project Satobage",
+    "toolkit": "oscar64",
+    "sources": [
+        "src/satobage.c"
+    ],
+    "build": "debug",
+    "definitions": [],
+    "includes": [],
+    "args": [
+        "-DVSPRITES_MAX=16",
+        "-DNUM_IRQS=28"
+    ],
+    "compiler": ""
+}
