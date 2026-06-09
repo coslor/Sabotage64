@@ -187,7 +187,7 @@ void move_troopers() {
 		int x=TO_INT(troopers[i].x);
 		int y=TO_INT(troopers[i].y);
 
-		int screen_loc=((y-45)/8)*40+(x-24)/8;//Why (y-45) instead of (y-50)? The world may never know.
+		int screen_loc=((y-44)/8)*40+(x-23)/8;//Why (y-45) instead of (y-50)? The world may never know.
 
 		if (screen[screen_loc+40]!=EMPTY_CHAR) {
 			//troopers[i].y=rand()%50;
@@ -215,8 +215,8 @@ void add_troopers() {
 			return;	//no troopers available
 		}
 		int r=rand() % 39;
-		int x=24+(r*8);
-		byte y=50;
+		int x=23+(r*8);
+		byte y=39;
 		init_trooper(tnum, tnum, TO_FX96(x), TO_FX96(y),(fx_96)32);//speed = n/64
 	}
 }

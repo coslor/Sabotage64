@@ -1,5 +1,5 @@
 #define SPRITE_FILE "resources/sabotage0.3.3.spd"
-#define SCREEN_FILE "resources/textscreen.bin"
+#define SCREEN_FILE "resources/satobage text 0.2.bin"
 #define CHAR_FILE	"resources/Satobage (ROM charset) 0.2.ctm"
 
 //#pragma region( lower, 0xa00, 0x0fff, , , {code} )
@@ -20,8 +20,18 @@
 // #pragma region(logo_screen_reg, 0x6000, 0x63ff,,,{logo_screen_sec})
 // #pragma region(logo_color_reg, 0x6400, 0x6fff,,,{logo_color_sec})
 
+#pragma section(charset_rec,0)
+#pragma region(charset_reg,0x8000,0x8800,,,{charset_rec})
+#pragma data(charset_rec)
+const char charset[] = {
+	#embed ctm_chars CHAR_FILE
+};
+#pragma reference(charset)
+
+
+
 #pragma section(screen_sec, 0)
-#pragma region(screen_reg,0x8000,0x83ff,,,{screen_sec})
+#pragma region(screen_reg,0x8800,0x8c00,,,{screen_sec})
 
 #pragma data (screen_sec)
 char screen[] = {
@@ -30,7 +40,7 @@ char screen[] = {
 #pragma reference(screen)
 
 #pragma section( spriteset_sec, 0)
-#pragma region( spriteset_reg, 0x8400, 0x8800,,, {spriteset_sec} )
+#pragma region( spriteset_reg, 0x8c00, 0x9000,,, {spriteset_sec} )
 
 #pragma data(spriteset_sec)
 
@@ -45,13 +55,6 @@ const char const spriteset[] =  {
 };
 #pragma reference(spriteset)
 
-#pragma section(charset_rec,0)
-#pragma region(charset_reg,0x8800,0x9000,,,{charset_rec})
-#pragma data(charset_rec)
-const char charset[] = {
-	#embed ctm_chars CHAR_FILE
-};
-#pragma reference(charset)
 
 
 

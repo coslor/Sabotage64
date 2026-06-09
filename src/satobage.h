@@ -13,7 +13,7 @@
 #define NUM_TROOPERS 	4
 #define NUM_BULLETS 	4
 
-#define SPRITE_OFFSET	16
+#define SPRITE_OFFSET	48
 
 signed char short_sin[] = {
 	0,6,12,18,24,29,35,39,44,48,52,55,58,60,61,62,63,
