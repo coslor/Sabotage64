@@ -1,4 +1,4 @@
-#include "satobage_memory.h"
+#include "sabotage64_memory.h"
 #include <c64/sprites.h>
 #include <c64/rasterirq.h>
 #include <c64/vic.h>
@@ -14,6 +14,8 @@
 #define NUM_BULLETS 	4
 
 #define SPRITE_OFFSET	48
+#define CHUTE_SPRITE	SPRITE_OFFSET+0
+#define TROOPER_SPRITE	SPRITE_OFFSET+1
 
 signed char short_sin[] = {
 	0,6,12,18,24,29,35,39,44,48,52,55,58,60,61,62,63,

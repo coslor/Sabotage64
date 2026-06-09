@@ -1,4 +1,4 @@
-#include "satobage.h"
+#include "sabotage64.h"
 
 // const char* hello_text = "HELLO, WORLD!";
 //char* screen = (char*) (0x8000);
@@ -8,7 +8,7 @@ MOB troopers[NUM_TROOPERS];
 MOB bullets[NUM_BULLETS];
 //fx_96 speed=0; //for debugger
 
-const byte MAX_TROOPER_COUNT=60;
+const byte MAX_TROOPER_COUNT=45;
 byte trooper_clock=MAX_TROOPER_COUNT;
 
 const byte TROOPER_CHAR=152;
@@ -172,8 +172,16 @@ void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 sp
 	troopers[trooper_num].speed_y=speed_y;
 	troopers[trooper_num].active = true;
 
-	vspr_set(troopers[trooper_num].vsprite_num,TO_INT(troopers[trooper_num].x),
-		TO_INT(troopers[trooper_num].y),SPRITE_OFFSET+1,VCOL_GREEN);
+	//trooper sprite
+	vspr_set(troopers[trooper_num].vsprite_num,
+		TO_INT(troopers[trooper_num].x),
+		TO_INT(troopers[trooper_num].y),
+		TROOPER_SPRITE,VCOL_GREEN);
+	//chute sprite
+	vspr_set(troopers[trooper_num].vsprite_num+NUM_TROOPERS,
+		TO_INT(troopers[trooper_num].x),
+		TO_INT(troopers[trooper_num].y),
+		CHUTE_SPRITE,VCOL_WHITE);
 }
 
 
@@ -194,6 +202,8 @@ void move_troopers() {
 			troopers[i].speed_y=0;
 			troopers[i].active=false;
 			vspr_hide(troopers[i].vsprite_num);
+			vspr_hide(troopers[i].vsprite_num+NUM_TROOPERS);	//chute
+
 			screen[screen_loc]=TROOPER_CHAR; //placeholder for trooper character
 			color[screen_loc]=VCOL_GREEN;
 			continue;
@@ -204,6 +214,7 @@ void move_troopers() {
 
 		//vspr_move(troopers[i].vsprite_num,x,y);
 		vspr_movey(troopers[i].vsprite_num,y);
+		vspr_movey(troopers[i].vsprite_num+NUM_TROOPERS,y);	//chute
 	}	
 }
 

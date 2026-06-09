@@ -1,6 +1,6 @@
-#define SPRITE_FILE "resources/sabotage0.3.3.spd"
-#define SCREEN_FILE "resources/satobage text 0.2.bin"
-#define CHAR_FILE	"resources/Satobage (ROM charset) 0.2.ctm"
+#define SPRITE_FILE "resources/sabotage64-0.3.4.spd"
+#define SCREEN_FILE "resources/sabotage64 text 0.3.bin"
+#define CHAR_FILE	"resources/Sabotage64 (ROM charset) 0.2.ctm"
 
 //#pragma region( lower, 0xa00, 0x0fff, , , {code} )
 #pragma region( lower, 0xa00, 0x7fff, , , {heap, stack, code, data, bss} )
@@ -28,11 +28,8 @@ const char charset[] = {
 };
 #pragma reference(charset)
 
-
-
 #pragma section(screen_sec, 0)
 #pragma region(screen_reg,0x8800,0x8c00,,,{screen_sec})
-
 #pragma data (screen_sec)
 char screen[] = {
 	#embed SCREEN_FILE
@@ -40,15 +37,8 @@ char screen[] = {
 #pragma reference(screen)
 
 #pragma section( spriteset_sec, 0)
-#pragma region( spriteset_reg, 0x8c00, 0x9000,,, {spriteset_sec} )
-
+#pragma region( spriteset_reg, 0x8c00, 0x9200,,, {spriteset_sec} )
 #pragma data(spriteset_sec)
-
-////
-//  NOTE: anything like this, where its data that needs to be there, but the 
-//      var itself isn't referenced anywhere, needs to be called out 
-//      with __export or #pragma reference(name), or it will be optimized away!
-////
 const char const spriteset[] =  {
 	#embed spd_sprites SPRITE_FILE
 

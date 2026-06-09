@@ -3,14 +3,14 @@
     "description": "Project Satobage",
     "toolkit": "oscar64",
     "sources": [
-        "src/satobage.c"
+        "src/sabotage64.c"
     ],
-    "build": "debug",
+    "build": "release",
     "definitions": [],
     "includes": [],
     "args": [
-        "-DVSPRITES_MAX=16",
-        "-DNUM_IRQS=28"
+        "-DVSPRITES_MAX=32",
+        "-DNUM_IRQS=40"
     ],
     "compiler": ""
 }
