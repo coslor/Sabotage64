@@ -1,3 +1,7 @@
+#define SPRITE_FILE "resources/sabotage0.3.3.spd"
+#define SCREEN_FILE "resources/textscreen.bin"
+#define CHAR_FILE	"resources/Satobage (ROM charset) 0.2.ctm"
+
 //#pragma region( lower, 0xa00, 0x0fff, , , {code} )
 #pragma region( lower, 0xa00, 0x7fff, , , {heap, stack, code, data, bss} )
 
@@ -17,17 +21,16 @@
 // #pragma region(logo_color_reg, 0x6400, 0x6fff,,,{logo_color_sec})
 
 #pragma section(screen_sec, 0)
-#pragma region(screen,0x8000,0x83ff,,,{screen_sec})
+#pragma region(screen_reg,0x8000,0x83ff,,,{screen_sec})
+
+#pragma data (screen_sec)
+char screen[] = {
+	#embed SCREEN_FILE
+};
+#pragma reference(screen)
 
 #pragma section( spriteset_sec, 0)
-#pragma region( spriteset_reg, 0x8400, 0x8c00,,, {spriteset_sec} )
-
-#pragma region( main, 0x8c01, 0xbfff, , , {heap, stack, code, data, bss} )
-
-
-//#define LOGO_FILE 	"resources/space_invaders_logo.kla"
-//#define MUSIC_FILE 	"resources/Space_Invaders_Medley.sid"
-#define SPRITE_FILE "resources/sabotage0.3.spd"
+#pragma region( spriteset_reg, 0x8400, 0x8800,,, {spriteset_sec} )
 
 #pragma data(spriteset_sec)
 
@@ -41,6 +44,29 @@ const char const spriteset[] =  {
 
 };
 #pragma reference(spriteset)
+
+#pragma section(charset_rec,0)
+#pragma region(charset_reg,0x8800,0x9000,,,{charset_rec})
+#pragma data(charset_rec)
+const char charset[] = {
+	#embed ctm_chars CHAR_FILE
+};
+#pragma reference(charset)
+
+
+
+#pragma region( main, 0xa000, 0xbfff, , , {heap, stack, code, data, bss} )
+
+// #pragma section(color_sec, 0)
+// #pragma region(color_reg, 0xd800, 0xdc00,,,{color_sec})
+
+
+// #pragma data(color_sec)
+// char color[0x3e8];
+// #pragma reference(color)
+
+//#define LOGO_FILE 	"resources/space_invaders_logo.kla"
+//#define MUSIC_FILE 	"resources/Space_Invaders_Medley.sid"
 
 // #pragma data(logo_bmp_sec)
 // __export const char const logo_bmp[] = {
