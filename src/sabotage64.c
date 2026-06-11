@@ -84,6 +84,8 @@ int main() {
 		//move_bullets();
 		draw_barrel();
 
+		//NOTE:Do these in the stated order! It can make a BIG performence difference!
+		
 		// 1. sort virtual sprites by y position
 		vspr_sort();
 
