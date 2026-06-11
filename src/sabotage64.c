@@ -263,7 +263,11 @@ void add_troopers() {
 		if (tnum==0xff) {
 			return;	//no troopers available
 		}
-		int r=rand() % 39;
+		byte r=0;
+		do {
+			r=rand() % 39;
+		} while (r>18 && r<22);
+
 		int x=23+(r*8);
 		byte y=39;
 		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),(fx_96)32);//speed = n/64
@@ -313,5 +317,11 @@ void handle_inputs() {
 		if (barrel_dir<0x180) {
 			barrel_dir+=0x10;
 		}
+	}
+	if (key_pressed(KSCAN_SPACE)){
+		vic.color_back=VCOL_RED;
+	}
+	else {
+		vic.color_back=VCOL_BLACK;
 	}
 }
