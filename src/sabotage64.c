@@ -8,11 +8,22 @@ MOB troopers[NUM_TROOPERS];
 MOB bullets[NUM_BULLETS];
 //fx_96 speed=0; //for debugger
 
-const byte MAX_TROOPER_COUNT=45;
-byte trooper_clock=MAX_TROOPER_COUNT;
+const byte MAX_TROOPER_CLOCK=45;
+byte trooper_clock=MAX_TROOPER_CLOCK;
 
 const byte TROOPER_CHAR=152;
 const byte EMPTY_CHAR=0x20;
+
+/**
+ * Angles look like:
+ * 		48
+ * 		|
+ *	32 ----0
+ * 		|
+ * 		16
+ */
+const byte BARREL_ANGLES[]={32,37,42,48,53,58,0};
+fx_96 barrel_dir=TO_FX96(3);
 
 int main() {
 	//MUST BE THE FIRST INSTRUCTION
@@ -30,6 +41,13 @@ int main() {
 
 	// initialize sprite multiplexer
 	vspr_init((char*)screen);
+
+	__asm {
+		nop
+	}
+
+	init_barrel();
+	init_bullets();
 
 	//clock_t time = clock();
 	//srand(time);
@@ -54,16 +72,23 @@ int main() {
 	rirq_start();
 	
 
+	int frame_num=0;
+
 	while (game_state==GS_RUNNING) {
+
+
+		handle_inputs();
+
 		add_troopers();
 		move_troopers();
 		//move_bullets();
-
-		// 2. wait for raster IRQ to reach end of frame
-		rirq_wait();
+		draw_barrel();
 
 		// 1. sort virtual sprites by y position
 		vspr_sort();
+
+		// 2. wait for raster IRQ to reach end of frame
+		rirq_wait();
 
 		// 3. update sprites back to normal and set up raster IRQ for sprites 8 to 31
 		vspr_update();
@@ -76,12 +101,12 @@ int main() {
 }
 
 void init_screen(byte num_stars) {
-	vic_setmode(VICM_TEXT,screen,charset);//(byte *)0x1000); //TODO is this correct?
+	vic_setmode(VICM_TEXT,screen,charset);
 
 	//memset(screen,0x20,1000);
 	memset(color,1,1000);
 
-	vic.color_border=VCOL_DARK_GREY;
+	vic.color_border=VCOL_WHITE;
 	vic.color_back=VCOL_BLACK;
 
 	//NOTE: can't unroll this loop, since the bounds are not constant
@@ -109,6 +134,12 @@ void init_screen(byte num_stars) {
 
 void move_sprites() {
 
+}
+
+void init_bullets() {
+	for (byte i=0;i<NUM_BULLETS;i++) {
+		bullets[i].vsprite_num=VS_BULLET_OFFSET+i;
+	}
 }
 
 //assumes that the MOB is of the right type
@@ -143,25 +174,28 @@ void move_bullets() {
 			vspr_hide(bullet->vsprite_num);
 			continue;
 		}
-		vspr_move(bullet->vsprite_num, x, y);
+		//vspr_move(bullet->vsprite_num, x, y);
+		vspr_move(BULLET);
 	}
 
 }
 
-void init_troopers() {
-	for (int i=0;i<NUM_TROOPERS;i++) {
-		//No conversion on speed; it's in n/64 units
-		init_trooper(i,i,TO_FX96(24+(i*16)), TO_FX96(rand()%50), (fx_96)32);
-		// troopers[i].vsprite_num=i;		
-		// /***NOTE: x MUST be an even multiple of 8 or the characters on the bottom won't line up! ***/
-		// troopers[i].x=TO_FX96(24+(i*16)); 
-		// troopers[i].y=TO_FX96(rand()%50);
-		// troopers[i].speed_y=32;	//No conversion here; speed is in n/64 units
-		// troopers[i].active = true;
-
-		// vspr_set(troopers[i].vsprite_num,TO_INT(troopers[i].x),TO_INT(troopers[i].y),0x11,VCOL_GREEN);
+/** @return the index of the next inactive trooper, or 0xff if all troopers are active */
+byte find_inactive_bullet() {
+	for (byte i=0;i<NUM_TROOPERS;i++) {
+		if (! bullets[i].active) {
+			return i;
+		}
 	}
+	return 0xff;
 }
+
+// void init_troopers() {
+// 	for (int i=0;i<NUM_TROOPERS;i++) {
+// 		//No conversion on speed; it's in n/64 units
+// 		init_trooper(i,VS_TROOPER_OFFSET+i,TO_FX96(24+(i*16)), TO_FX96(rand()%50), (fx_96)32);
+// 	}
+// }
 
 /** **NOTE: x MUST be an even multiple of 8 or the characters on the bottom won't line up!** **/
 void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
@@ -171,6 +205,8 @@ void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 sp
 	troopers[trooper_num].speed_x=0;
 	troopers[trooper_num].speed_y=speed_y;
 	troopers[trooper_num].active = true;
+	troopers[trooper_num].has_chute=true;
+	troopers[trooper_num].active=true;
 
 	//trooper sprite
 	vspr_set(troopers[trooper_num].vsprite_num,
@@ -178,7 +214,7 @@ void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 sp
 		TO_INT(troopers[trooper_num].y),
 		TROOPER_SPRITE,VCOL_GREEN);
 	//chute sprite
-	vspr_set(troopers[trooper_num].vsprite_num+NUM_TROOPERS,
+	vspr_set(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,
 		TO_INT(troopers[trooper_num].x),
 		TO_INT(troopers[trooper_num].y),
 		CHUTE_SPRITE,VCOL_WHITE);
@@ -195,32 +231,32 @@ void move_troopers() {
 		int x=TO_INT(troopers[i].x);
 		int y=TO_INT(troopers[i].y);
 
-		int screen_loc=((y-44)/8)*40+(x-23)/8;//Why (y-45) instead of (y-50)? The world may never know.
+		//Why (y-44) instead of (y-49)? Because the shape starts at (2,7) in the sprite.
+		int screen_loc=((y-44)/8)*40+(x-23)/8;
 
 		if (screen[screen_loc+40]!=EMPTY_CHAR) {
-			//troopers[i].y=rand()%50;
-			troopers[i].speed_y=0;
-			troopers[i].active=false;
-			vspr_hide(troopers[i].vsprite_num);
-			vspr_hide(troopers[i].vsprite_num+NUM_TROOPERS);	//chute
-
-			screen[screen_loc]=TROOPER_CHAR; //placeholder for trooper character
-			color[screen_loc]=VCOL_GREEN;
+			land_trooper(i,screen_loc);
 			continue;
 		}
-		// else if (y<50) {
-		// 	continue;
-		// }
 
-		//vspr_move(troopers[i].vsprite_num,x,y);
 		vspr_movey(troopers[i].vsprite_num,y);
-		vspr_movey(troopers[i].vsprite_num+NUM_TROOPERS,y);	//chute
+		vspr_movey(troopers[i].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,y);	//chute
 	}	
 }
 
+void land_trooper(int trooper_num, int screen_loc) {
+	troopers[trooper_num].speed_y=0;
+	troopers[trooper_num].active=false;
+	vspr_hide(troopers[trooper_num].vsprite_num);
+	vspr_hide(troopers[trooper_num].vsprite_num+NUM_TROOPERS);	//chute
+
+	screen[screen_loc]=TROOPER_CHAR; //placeholder for trooper character
+	color[screen_loc]=VCOL_GREEN;
+
+}
 void add_troopers() {
 	if (--trooper_clock == 0) {
-		trooper_clock=MAX_TROOPER_COUNT;
+		trooper_clock=MAX_TROOPER_CLOCK;
 		byte tnum=find_inactive_trooper();
 		if (tnum==0xff) {
 			return;	//no troopers available
@@ -228,11 +264,11 @@ void add_troopers() {
 		int r=rand() % 39;
 		int x=23+(r*8);
 		byte y=39;
-		init_trooper(tnum, tnum, TO_FX96(x), TO_FX96(y),(fx_96)32);//speed = n/64
+		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),(fx_96)32);//speed = n/64
 	}
 }
 
-/* Returns the index of the next inactive trooper, or 0xff if all troopers are active */
+/** @return the index of the next inactive trooper, or 0xff if all troopers are active */
 byte find_inactive_trooper() {
 	for (byte i=0;i<NUM_TROOPERS;i++) {
 		if (! troopers[i].active) {
@@ -240,4 +276,40 @@ byte find_inactive_trooper() {
 		}
 	}
 	return 0xff;
+}
+
+
+/**
+ * @param dir the direction of the barrel, from 32 to 0 (or 64)
+ */
+void draw_barrel(){
+	int bd=TO_INT(barrel_dir);
+	int spr_num=BARREL_SPRITE_OFFSET+bd;
+	vspr_image(15,BARREL_SPRITE_OFFSET+TO_INT(barrel_dir));
+}
+
+void init_barrel() {
+	int spr_num=BARREL_SPRITE_OFFSET+TO_INT(barrel_dir);
+	vspr_set(15,
+			176,
+			189,
+			spr_num,
+			//60,
+			VCOL_WHITE);	
+}
+
+void handle_inputs() {
+	joy_poll(0);
+	keyb_poll();
+
+	if (key_pressed(KSCAN_A) || key_pressed(KSCAN_K) || joyx[0]==-1) {
+		if (barrel_dir>=0x10) {
+			barrel_dir-=0x10;
+		}
+	}
+	if (key_pressed(KSCAN_S) || key_pressed(KSCAN_L) || joyx[0]==1) {
+		if (barrel_dir<0x180) {
+			barrel_dir+=0x10;
+		}
+	}
 }

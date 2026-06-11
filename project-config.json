@@ -5,11 +5,11 @@
     "sources": [
         "src/sabotage64.c"
     ],
-    "build": "release",
+    "build": "debug",
     "definitions": [],
     "includes": [],
     "args": [
-        "-DVSPRITES_MAX=32",
+        "-DVSPRITES_MAX=16",
         "-DNUM_IRQS=40"
     ],
     "compiler": ""

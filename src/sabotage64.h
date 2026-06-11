@@ -8,27 +8,46 @@
 #include <conio.h>
 #include <string.h>		//for memset()
 #include <time.h>
+#include <c64/joystick.h>
+#include <c64/keyboard.h>
 
-#define TOTAL_MOBS 		16
-#define NUM_TROOPERS 	4
-#define NUM_BULLETS 	4
 
-#define SPRITE_OFFSET	48
-#define CHUTE_SPRITE	SPRITE_OFFSET+0
-#define TROOPER_SPRITE	SPRITE_OFFSET+1
+//#define TOTAL_VSPRITES 		16
+#define NUM_TROOPERS 		4
+#define NUM_CHUTES			NUM_TROOPERS
+#define NUM_BULLETS 		4
 
-signed char short_sin[] = {
+#define SPRITE_OFFSET		48
+#define CHUTE_SPRITE		SPRITE_OFFSET+0
+#define TROOPER_SPRITE		SPRITE_OFFSET+1
+#define BULLET_SPRITE		SPRITE_OFFSET+18
+#define BARREL_SPRITE_OFFSET SPRITE_OFFSET+9
+
+/** VSprite # offsets. VSprites are stored as:
+*	TT..TCC..CBB..BR
+*	...where T are troopers, C are chutes, B are bullets, and R is the barrel
+**/
+
+#define VS_TROOPER_OFFSET	1
+#define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + NUM_TROOPERS
+#define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + NUM_CHUTES
+#define VS_BARREL_OFFSET	VS_BULLET_OFFSET + NUM_BULLETS
+
+/**
+ * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
+ */
+signed char short_sin[64] = {
 	0,6,12,18,24,29,35,39,44,48,52,55,58,60,61,62,63,
 	62,61,60,58,55,52,48,44,39,35,29,24,18,12,6,0,
 	-6,-12,-18,-24,-29,-35,-39,-44,-48,-52,-55,-58,-60,-61,-62,-63,
-	-62,-61,-60,-58,-55,-52,-48,-44,-39,-35,-29,-24,-18,-12,-6,
+	-62,-61,-60,-58,-55,-52,-48,-44,-39,-35,-29,-24,-18,-12,-6
 };
 
-signed char short_cos[] = {
+signed char short_cos[64] = {
 	63,62,61,60,58,55,52,48,44,39,35,29,24,18,12,6,0,
 	-6,-12,-18,-24,-29,-35,-39,-44,-48,-52,-55,-58,-60,-61,-62,-63,
 	-62,-61,-60,-58,-55,-52,-48,-44,-39,-35,-29,-24,-18,-12,-6,0,
-	6,12,18,24,29,35,39,44,48,52,55,58,60,61,62,
+	6,12,18,24,29,35,39,44,48,52,55,58,60,61,62
 };
 
 typedef enum MOBType{
@@ -43,8 +62,8 @@ GameState game_state=GS_RUNNING;
 /****Fixed Point 9.6 Stuff ****/
 typedef signed int fx_96;
 
-#define TO_INT(n) n>>6
-#define TO_FX96(n) n<<6
+#define TO_INT(n) (int)(n>>6)
+#define TO_FX96(n) (fx_96)(n<<6)
 
 /**** MOB Stuff  ****/
 typedef struct {
@@ -64,10 +83,19 @@ typedef struct {
 /****Method Signatures****/
 
 void init_screen(byte num_stars);
+
 void init_troopers();
 void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y);
 void move_troopers();
-void fire_bullet(MOB* bullet, int x, int y, byte direction, fx_96 speed);
-void move_bullets();
+void land_trooper(int trooper_num, int screen_loc);
 byte find_inactive_trooper();
 void add_troopers();
+
+void init_bullets();
+void fire_bullet(MOB* bullet, int x, int y, byte direction, fx_96 speed);
+void move_bullets();
+
+void init_barrel();
+void draw_barrel();
+
+void handle_inputs();

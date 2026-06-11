@@ -1,9 +1,9 @@
-#define SPRITE_FILE "resources/sabotage64-0.3.4.spd"
-#define SCREEN_FILE "resources/sabotage64 text 0.3.bin"
-#define CHAR_FILE	"resources/Sabotage64 (ROM charset) 0.2.ctm"
+#define SPRITE_FILE "resources/sabotage64-0.3.6.spd"
+#define SCREEN_FILE "resources/sabotage64 text 0.4.bin"
+#define CHAR_FILE	"resources/Sabotage64 (ROM charset) 0.3.ctm"
 
 //#pragma region( lower, 0xa00, 0x0fff, , , {code} )
-#pragma region( lower, 0xa00, 0x7fff, , , {heap, stack, code, data, bss} )
+#pragma region( lower, 0xa00, 0x8000, , , {heap, stack, code, data, bss} )
 
 
 // #pragma section(music_sec, 0)
@@ -37,7 +37,7 @@ char screen[] = {
 #pragma reference(screen)
 
 #pragma section( spriteset_sec, 0)
-#pragma region( spriteset_reg, 0x8c00, 0x9200,,, {spriteset_sec} )
+#pragma region( spriteset_reg, 0x8c00, 0x9c00,,, {spriteset_sec} )
 #pragma data(spriteset_sec)
 const char const spriteset[] =  {
 	#embed spd_sprites SPRITE_FILE
