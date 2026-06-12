@@ -1,11 +1,11 @@
 {
-    "name": "Satobage",
-    "description": "Project Satobage",
+    "name": "Sabotage64",
+    "description": "Project Sabotage64",
     "toolkit": "oscar64",
     "sources": [
         "src/sabotage64.c"
     ],
-    "build": "debug",
+    "build": "release",
     "definitions": [],
     "includes": [],
     "args": [

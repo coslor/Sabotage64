@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "C64",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "compilerPath": "",
+            "cppStandard": "c++20",
+            "cStandard": "c99",
+            "includePath": [
+                "c:/Users/chris/dev/Sabotage64"
+            ]
+        }
+    ],
+    "version": 4
+}
