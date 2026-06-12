@@ -17,7 +17,7 @@
 #define NUM_CHUTES			NUM_TROOPERS
 #define NUM_BULLETS 		4
 
-#define SPRITE_OFFSET		48
+#define SPRITE_OFFSET		0xec
 #define CHUTE_SPRITE		SPRITE_OFFSET+0
 #define TROOPER_SPRITE		SPRITE_OFFSET+1
 #define BULLET_SPRITE		SPRITE_OFFSET+18
@@ -33,6 +33,11 @@
 #define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + NUM_CHUTES
 #define VS_BARREL_OFFSET	VS_BULLET_OFFSET + NUM_BULLETS
 
+
+#define BULLET_COLOR		VCOL_WHITE
+#define TROOPER_COLOR		VCOL_GREEN
+#define BARREL_COLOR		VCOL_LT_GREY
+#define CHUTE_COLOR			VCOL_WHITE
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
  */

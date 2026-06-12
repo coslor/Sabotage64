@@ -108,7 +108,7 @@ void init_screen(byte num_stars) {
 	//memset(screen,0x20,1000);
 	memset(color,1,1000);
 
-	vic.color_border=VCOL_WHITE;
+	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_BLACK;
 
 	//NOTE: can't unroll this loop, since the bounds are not constant
@@ -155,7 +155,7 @@ void fire_bullet(MOB* bullet, int x, int y, byte direction, fx_96 speed) {
 	bullet->speed_x = speed*short_cos[direction] / 64;
 	bullet->speed_y = speed*short_sin[direction] / 64;
 
-	vspr_set(bullet->vsprite_num,TO_INT(bullet->x), TO_INT(bullet->y), 26, VCOL_WHITE);
+	vspr_set(bullet->vsprite_num,TO_INT(bullet->x), TO_INT(bullet->y), 26, BULLET_COLOR);
 
 }
 
@@ -214,12 +214,12 @@ void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 sp
 	vspr_set(troopers[trooper_num].vsprite_num,
 		TO_INT(troopers[trooper_num].x),
 		TO_INT(troopers[trooper_num].y),
-		TROOPER_SPRITE,VCOL_GREEN);
+		TROOPER_SPRITE,TROOPER_COLOR);
 	//chute sprite
 	vspr_set(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,
 		TO_INT(troopers[trooper_num].x),
 		TO_INT(troopers[trooper_num].y),
-		CHUTE_SPRITE,VCOL_WHITE);
+		CHUTE_SPRITE,CHUTE_COLOR);
 }
 
 
@@ -269,7 +269,7 @@ void add_troopers() {
 		} while (r>18 && r<22);
 
 		int x=23+(r*8);
-		byte y=39;
+		byte y=56;
 		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),(fx_96)32);//speed = n/64
 	}
 }
@@ -301,7 +301,7 @@ void init_barrel() {
 			189,
 			spr_num,
 			//60,
-			VCOL_WHITE);	
+			BARREL_COLOR);	
 }
 
 void handle_inputs() {
