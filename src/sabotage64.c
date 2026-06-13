@@ -301,6 +301,7 @@ void add_troopers() {
 
 /** @return the index of the next inactive trooper, or 0xff if all troopers are active */
 byte find_trooper(bool active) {
+	#pragma unroll(full)
 	for (byte i=0;i<NUM_TROOPERS;i++) {
 		if (troopers[i].active == active) {
 			return i;
@@ -383,6 +384,7 @@ void handle_inputs() {
 }
 
 void steer_bullets() {
+	#pragma unroll(full)
 	for (int i=0;i<NUM_BULLETS;i++) {
 		if (! bullets[i].active) {
 			continue;
@@ -390,7 +392,6 @@ void steer_bullets() {
 		byte bd=BARREL_ANGLES[TO_INT(barrel_dir)];
 		bullets[i].speed_x = (fx_96)BULLET_SPEED*short_cos[bd] / 64;
 		bullets[i].speed_y = (fx_96)BULLET_SPEED*short_sin[bd] / 64;
-
 	}
 }
 
@@ -410,7 +411,7 @@ bool fire_bullet_now() {
 	byte bd=BARREL_ANGLES[TO_INT(barrel_dir)];
 
 	fx_96 bullet_x=TO_FX96(BARREL_X+11);
-	fx_96 bullet_y=TO_FX96(BARREL_Y+20);
+	fx_96 bullet_y=TO_FX96(BARREL_Y+17);
 
 #ifdef PERFECT_SHOT
 	byte trooper_num=find_trooper(true);
@@ -432,6 +433,7 @@ bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy) {
 }
 
 void check_bullet_collisions() {
+	#pragma unroll(full)
 	for (int i=0;i<NUM_BULLETS;i++) {
 		MOB *bullet = &bullets[i];
 		if (! bullet->active) {

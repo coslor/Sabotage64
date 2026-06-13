@@ -13,9 +13,9 @@
 
 
 //#define TOTAL_VSPRITES 		16
-#define NUM_TROOPERS 		1
+#define NUM_TROOPERS 		6
 #define NUM_CHUTES			NUM_TROOPERS
-#define NUM_BULLETS 		4
+#define NUM_BULLETS 		6
 //actual bullet speed is this value /64
 #define BULLET_SPEED		96
 
@@ -48,7 +48,7 @@
 #define BARREL_Y			189
 
 //Can you steer the shells after they've been shot?
-#define STEERABLE_BULLETS
+//#define STEERABLE_BULLETS
 
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
