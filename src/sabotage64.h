@@ -13,9 +13,10 @@
 
 
 //#define TOTAL_VSPRITES 		16
-#define NUM_TROOPERS 		4
+#define NUM_TROOPERS 		1
 #define NUM_CHUTES			NUM_TROOPERS
-#define NUM_BULLETS 		4
+#define NUM_BULLETS 		1
+#define BULLET_SPEED		96
 
 #define SPRITE_OFFSET		0xec
 #define CHUTE_SPRITE		SPRITE_OFFSET+0
@@ -24,20 +25,24 @@
 #define BARREL_SPRITE_OFFSET SPRITE_OFFSET+9
 
 /** VSprite # offsets. VSprites are stored as:
-*	TT..TCC..CBB..BR
+*	RTT..TCC..CBB..B
 *	...where T are troopers, C are chutes, B are bullets, and R is the barrel
 **/
 
 #define VS_TROOPER_OFFSET	1
 #define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + NUM_TROOPERS
 #define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + NUM_CHUTES
-#define VS_BARREL_OFFSET	VS_BULLET_OFFSET + NUM_BULLETS
+#define VS_BARREL_OFFSET	0
 
 
 #define BULLET_COLOR		VCOL_WHITE
 #define TROOPER_COLOR		VCOL_GREEN
 #define BARREL_COLOR		VCOL_LT_GREY
 #define CHUTE_COLOR			VCOL_WHITE
+
+#define BARREL_X			176
+#define BARREL_Y			189
+
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
  */
@@ -71,16 +76,27 @@ typedef signed int fx_96;
 #define TO_FX96(n) (fx_96)(n<<6)
 
 /**** MOB Stuff  ****/
-typedef struct {
-	byte			vsprite_num;
-    bool            active=false;
-	MobType 		type;
+
+typedef struct Box {
 	fx_96			x;
 	fx_96			y;
+	fx_96			end_x;
+	fx_96			end_y;
+} Box;
+
+typedef struct MOB {
+	byte			vsprite_num;
+    bool            active=false;
+	//MobType 		type;
+	//Box				box;
+	fx_96			x;
+	fx_96			y;
+	fx_96			end_x;
+	fx_96			end_y;
 	fx_96 			speed_x=0;
 	fx_96 			speed_y=0;
-	byte			width;
-	byte			height;
+	// byte			width;
+	// byte			height;
 	bool 			has_chute=false;
 } MOB;
 
@@ -97,10 +113,15 @@ byte find_inactive_trooper();
 void add_troopers();
 
 void init_bullets();
-void fire_bullet(MOB* bullet, int x, int y, byte direction, fx_96 speed);
+void fire_bullet(MOB* bullet, fx_96 x, fx_96 y, byte direction, fx_96 speed);
 void move_bullets();
+void check_bullet_collisions();
+inline bool point_is_in_box(int x, int y, int bx, int by, int bx_end, int by_end);
 
 void init_barrel();
 void draw_barrel();
 
 void handle_inputs();
+bool fire_bullet_now();
+
+void kill_trooper(byte num);

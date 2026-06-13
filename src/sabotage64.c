@@ -25,6 +25,22 @@ const byte EMPTY_CHAR=0x20;
 const byte BARREL_ANGLES[]={32,37,42,48,53,58,0};
 fx_96 barrel_dir=TO_FX96(3);
 
+const byte MAX_BULLET_CLOCK=20;
+byte bullet_clock=MAX_BULLET_CLOCK;
+bool is_firing;
+
+////
+// for debugging
+////
+__export int bx;
+__export int by;
+__export int tx;
+__export int ty;
+__export int tx2;
+__export int ty2;
+
+
+
 int main() {
 	//MUST BE THE FIRST INSTRUCTION
 	mmap_trampoline();
@@ -81,8 +97,10 @@ int main() {
 
 		add_troopers();
 		move_troopers();
-		//move_bullets();
+		move_bullets();
 		draw_barrel();
+
+		check_bullet_collisions();
 
 		//NOTE:Do these in the stated order! It can make a BIG performence difference!
 		
@@ -145,17 +163,20 @@ void init_bullets() {
 }
 
 //assumes that the MOB is of the right type
-void fire_bullet(MOB* bullet, int x, int y, byte direction, fx_96 speed) {
+void fire_bullet(MOB* bullet, fx_96 x, fx_96 y, byte direction, fx_96 speed) {
 	__assume(direction<64);
-	__assume(bullet->type == BULLET);
+	//__assume(bullet->type == BULLET);
 
 	bullet->active = true;
-	bullet->x=TO_FX96(x);
-	bullet->y=TO_FX96(y);
+	bullet->x=x;
+	bullet->y=y;
+	bullet->end_x = x + TO_FX96(1);
+	bullet->end_y = y + TO_FX96(1);
 	bullet->speed_x = speed*short_cos[direction] / 64;
 	bullet->speed_y = speed*short_sin[direction] / 64;
 
-	vspr_set(bullet->vsprite_num,TO_INT(bullet->x), TO_INT(bullet->y), 26, BULLET_COLOR);
+	vspr_set(bullet->vsprite_num,TO_INT(bullet->x), TO_INT(bullet->y), 
+		BULLET_SPRITE, BULLET_COLOR);
 
 }
 
@@ -163,11 +184,13 @@ void move_bullets() {
 
 	for (int i=0;i<NUM_BULLETS;i++) {
 		MOB* bullet = &bullets[i];
-		__assume(bullet->type == BULLET);
+		//__assume(bullet->type == BULLET);
 		if (! bullet->active) continue;
 
 		bullet->x += bullet->speed_x;
 		bullet->y += bullet->speed_y;
+		bullet->end_x += bullet->speed_x;
+		bullet->end_y += bullet->speed_y;
 
 		int x=TO_INT(bullet->x);
 		int y=TO_INT(bullet->y);
@@ -176,15 +199,15 @@ void move_bullets() {
 			vspr_hide(bullet->vsprite_num);
 			continue;
 		}
-		//vspr_move(bullet->vsprite_num, x, y);
-		vspr_move(BULLET);
+		vspr_move(bullet->vsprite_num, x, y);
+		//vspr_move(BULLET);
 	}
 
 }
 
 /** @return the index of the next inactive trooper, or 0xff if all troopers are active */
 byte find_inactive_bullet() {
-	for (byte i=0;i<NUM_TROOPERS;i++) {
+	for (byte i=0;i<NUM_BULLETS;i++) {
 		if (! bullets[i].active) {
 			return i;
 		}
@@ -192,33 +215,34 @@ byte find_inactive_bullet() {
 	return 0xff;
 }
 
-// void init_troopers() {
-// 	for (int i=0;i<NUM_TROOPERS;i++) {
-// 		//No conversion on speed; it's in n/64 units
-// 		init_trooper(i,VS_TROOPER_OFFSET+i,TO_FX96(24+(i*16)), TO_FX96(rand()%50), (fx_96)32);
-// 	}
-// }
-
 /** **NOTE: x MUST be an even multiple of 8 or the characters on the bottom won't line up!** **/
-void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
-	troopers[trooper_num].vsprite_num=vsprite_num;		
-	troopers[trooper_num].x=x; 
-	troopers[trooper_num].y=y;
-	troopers[trooper_num].speed_x=0;
-	troopers[trooper_num].speed_y=speed_y;
-	troopers[trooper_num].active = true;
-	troopers[trooper_num].has_chute=true;
-	troopers[trooper_num].active=true;
+void init_trooper(byte num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
+	MOB* t=&troopers[num];
+	t->vsprite_num=vsprite_num;
+
+	//Box* b = &(t->box);		
+	t->x=x+TO_FX96(2);
+	tx=TO_INT(t->x);
+	t->y=y+TO_FX96(7);
+	ty = TO_INT(t->y);
+	t->end_x=x+TO_FX96(6);
+	tx2=TO_INT(t->end_x);
+	t->end_y=y+TO_FX96(14);
+	ty2=TO_INT(t->end_y);
+
+
+	t->speed_x=0;
+	t->speed_y=speed_y;
+	t->active = true;
+	t->has_chute=true;
 
 	//trooper sprite
-	vspr_set(troopers[trooper_num].vsprite_num,
-		TO_INT(troopers[trooper_num].x),
-		TO_INT(troopers[trooper_num].y),
+	vspr_set(t->vsprite_num,
+		TO_INT(t->x),TO_INT(t->y),
 		TROOPER_SPRITE,TROOPER_COLOR);
 	//chute sprite
-	vspr_set(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,
-		TO_INT(troopers[trooper_num].x),
-		TO_INT(troopers[trooper_num].y),
+	vspr_set(t->vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,
+		TO_INT(t->x),TO_INT(t->y),
 		CHUTE_SPRITE,CHUTE_COLOR);
 }
 
@@ -229,6 +253,7 @@ void move_troopers() {
 			continue;
 		}
 		troopers[i].y+=troopers[i].speed_y;
+		troopers[i].end_y+=troopers[i].speed_y;
 
 		int x=TO_INT(troopers[i].x);
 		int y=TO_INT(troopers[i].y);
@@ -291,14 +316,16 @@ byte find_inactive_trooper() {
 void draw_barrel(){
 	int bd=TO_INT(barrel_dir);
 	int spr_num=BARREL_SPRITE_OFFSET+bd;
-	vspr_image(15,BARREL_SPRITE_OFFSET+TO_INT(barrel_dir));
+	//vspr_image(VS_BARREL_OFFSET,BARREL_SPRITE_OFFSET+TO_INT(barrel_dir));
+	//shouldn't have to make the full call every time, but sometimes it loses the x,y???
+	init_barrel();
 }
 
 void init_barrel() {
 	int spr_num=BARREL_SPRITE_OFFSET+TO_INT(barrel_dir);
-	vspr_set(15,
-			176,
-			189,
+	vspr_set(VS_BARREL_OFFSET,
+			BARREL_X,
+			BARREL_Y,
 			spr_num,
 			//60,
 			BARREL_COLOR);	
@@ -318,10 +345,88 @@ void handle_inputs() {
 			barrel_dir+=0x10;
 		}
 	}
-	if (key_pressed(KSCAN_SPACE)){
-		vic.color_back=VCOL_RED;
+	if (key_pressed(KSCAN_SPACE) || joyb[0]>0) {
+		if (is_firing) {
+			if (bullet_clock-- == 0) {
+				if (! fire_bullet_now()) {
+					// vic.color_back=VCOL_RED;
+				}
+				else {
+					vic.color_back=VCOL_BLACK;
+				}
+				bullet_clock = MAX_BULLET_CLOCK;
+			}
+		}
+		else {
+			if (!fire_bullet_now()) {
+				//vic.color_back=VCOL_RED;
+			}
+			else {
+				vic.color_back=VCOL_BLACK;
+			}
+
+			is_firing=true;
+			bullet_clock == MAX_BULLET_CLOCK;
+		}
 	}
 	else {
-		vic.color_back=VCOL_BLACK;
+		is_firing = false;
 	}
+}
+
+bool fire_bullet_now() {
+	byte bullet_num=find_inactive_bullet();
+	if(bullet_num==0xff) {
+		return false;
+	}
+
+	if (TO_INT(barrel_dir)>6) {
+		vic.color_border=VCOL_PURPLE;
+		while(true);
+	}
+	byte bd=BARREL_ANGLES[TO_INT(barrel_dir)];
+	//speed is a fraction, actual value is speed/64)
+	fire_bullet(&bullets[bullet_num],TO_FX96(BARREL_X+11), TO_FX96(BARREL_Y+20), bd,(fx_96)BULLET_SPEED);
+	return true;
+}
+
+
+bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy) {
+
+	return (x >= bx && x <=b_endx && y>=by && y<=b_endy);
+}
+
+void check_bullet_collisions() {
+	for (int i=0;i<NUM_BULLETS;i++) {
+		MOB *bullet = &bullets[i];
+		if (! bullet->active) {
+			continue;
+		}
+			
+		
+		for (int j=0;j<NUM_TROOPERS;j++) {
+			MOB *trooper=&troopers[j];
+			if (! trooper->active) {
+				continue;
+			}
+			bx=TO_INT(bullet->x);
+			by=TO_INT(bullets->y);
+			tx=TO_INT(trooper->x);
+			ty=TO_INT(trooper->y);
+			tx2=TO_INT(trooper->end_x);
+			ty2=TO_INT(trooper->end_y);
+			if (point_is_in_box(bullet->x,bullet->y,
+					trooper->x,trooper->y,trooper->end_x,trooper->end_y)) {
+				kill_trooper(j);
+			}//if point
+		}//for j
+	}//for i
+}//check_bullet_collisions
+
+
+void kill_trooper(byte num) {
+	//vspr_color(troopers[num].vsprite_num,VCOL_RED);
+	troopers[num].active=false;
+	vspr_hide(troopers[num].vsprite_num);
+	vspr_hide(troopers[num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
 }

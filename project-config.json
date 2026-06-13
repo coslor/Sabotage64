@@ -5,7 +5,7 @@
     "sources": [
         "src/sabotage64.c"
     ],
-    "build": "release",
+    "build": "debug",
     "definitions": [],
     "includes": [],
     "args": [

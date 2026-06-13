@@ -36,6 +36,8 @@ char screen[] = {
 };
 #pragma reference(screen)
 
+#pragma region( main, 0x8c00, 0xbb00, , , {heap, stack, code, data, bss} )
+
 #pragma section( spriteset_sec, 0)
 #pragma region( spriteset_reg, 0xbb00, 0xc000,,, {spriteset_sec} )
 #pragma data(spriteset_sec)
@@ -48,7 +50,6 @@ __export char const spriteset[] =  {
 
 
 
-#pragma region( main, 0x8c00, 0xbb00, , , {heap, stack, code, data, bss} )
 
 // #pragma section(color_sec, 0)
 // #pragma region(color_reg, 0xd800, 0xdc00,,,{color_sec})
