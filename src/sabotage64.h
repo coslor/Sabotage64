@@ -15,8 +15,12 @@
 //#define TOTAL_VSPRITES 		16
 #define NUM_TROOPERS 		1
 #define NUM_CHUTES			NUM_TROOPERS
-#define NUM_BULLETS 		1
+#define NUM_BULLETS 		4
+//actual bullet speed is this value /64
 #define BULLET_SPEED		96
+
+//If defined, all shots automatically hit
+//#define PERFECT_SHOT
 
 #define SPRITE_OFFSET		0xec
 #define CHUTE_SPRITE		SPRITE_OFFSET+0
@@ -42,6 +46,9 @@
 
 #define BARREL_X			176
 #define BARREL_Y			189
+
+//Can you steer the shells after they've been shot?
+#define STEERABLE_BULLETS
 
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
@@ -109,7 +116,7 @@ void init_troopers();
 void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y);
 void move_troopers();
 void land_trooper(int trooper_num, int screen_loc);
-byte find_inactive_trooper();
+byte find_trooper(bool active);
 void add_troopers();
 
 void init_bullets();
@@ -125,3 +132,6 @@ void handle_inputs();
 bool fire_bullet_now();
 
 void kill_trooper(byte num);
+void kill_bullet(byte num);
+
+void steer_bullets();
