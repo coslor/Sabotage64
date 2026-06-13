@@ -10,12 +10,13 @@
 #include <time.h>
 #include <c64/joystick.h>
 #include <c64/keyboard.h>
+#include <audio/sidfx.h>
 
 
 //#define TOTAL_VSPRITES 		16
-#define NUM_TROOPERS 		6
+#define NUM_TROOPERS 		4
 #define NUM_CHUTES			NUM_TROOPERS
-#define NUM_BULLETS 		6
+#define NUM_BULLETS 		5
 //actual bullet speed is this value /64
 #define BULLET_SPEED		96
 
@@ -50,6 +51,8 @@
 //Can you steer the shells after they've been shot?
 //#define STEERABLE_BULLETS
 
+#define TROOPER_CHUTE_SPEED	16
+#define TROOPER_NO_CHUTE_SPEED 32
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
  */

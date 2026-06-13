@@ -1,5 +1,8 @@
 #include "sabotage64.h"
 
+#include "SIDFX.h"
+
+
 // const char* hello_text = "HELLO, WORLD!";
 //char* screen = (char*) (0x8000);
 unsigned char* color = (unsigned char*) (0xd800);
@@ -52,6 +55,10 @@ int main() {
 
 	init_screen(25);
 
+	sidfx_init();
+	sid.fmodevol = 15;
+
+
 	// enable raster interrupt via direct path
 	rirq_init(false);
 
@@ -86,9 +93,10 @@ int main() {
 	rirq_sort();
 
 	rirq_start();
-	
-
+	//edcbedcbedcba
 	int frame_num=0;
+
+	sidfx_play(1,SFXOpening,13);
 
 	while (game_state==GS_RUNNING) {
 
@@ -103,6 +111,8 @@ int main() {
 		draw_barrel();
 
 		move_bullets();
+
+		sidfx_loop();
 
 		//NOTE:Do these in the stated order! It can make a BIG performence difference!
 		
@@ -295,7 +305,8 @@ void add_troopers() {
 
 		int x=23+(r*8);
 		byte y=56;
-		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),(fx_96)32);//speed = n/64
+		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),
+			(fx_96)TROOPER_CHUTE_SPEED);//speed = n/64
 	}
 }
 
@@ -423,6 +434,7 @@ bool fire_bullet_now() {
 
 	//speed is a fraction, actual value is speed/64)
 	fire_bullet(&bullets[bullet_num],bullet_x, bullet_y, bd,(fx_96)BULLET_SPEED);
+	sidfx_play(0,SIDFXFire,1);
 	return true;
 }
 
