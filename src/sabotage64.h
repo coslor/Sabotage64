@@ -18,7 +18,7 @@
 #define NUM_CHUTES			NUM_TROOPERS
 #define NUM_BULLETS 		5
 //actual bullet speed is this value /64
-#define BULLET_SPEED		96
+#define BULLET_SPEED		120
 
 //If defined, all shots automatically hit
 //#define PERFECT_SHOT

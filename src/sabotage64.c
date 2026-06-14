@@ -11,7 +11,7 @@ MOB troopers[NUM_TROOPERS];
 MOB bullets[NUM_BULLETS];
 //fx_96 speed=0; //for debugger
 
-const byte MAX_TROOPER_CLOCK=45;
+const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock=MAX_TROOPER_CLOCK;
 
 const byte TROOPER_CHAR=152;
@@ -290,7 +290,10 @@ void land_trooper(int trooper_num, int screen_loc) {
 	screen[screen_loc]=TROOPER_CHAR; //placeholder for trooper character
 	color[screen_loc]=VCOL_GREEN;
 
+	trooper_clock=MAX_TROOPER_CLOCK;
+
 }
+
 void add_troopers() {
 	if (--trooper_clock == 0) {
 		trooper_clock=MAX_TROOPER_CLOCK;
@@ -478,6 +481,9 @@ void kill_trooper(byte num) {
 	troopers[num].active=false;
 	vspr_hide(troopers[num].vsprite_num);
 	vspr_hide(troopers[num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
+	sidfx_play(1,SIDFXQuickExplosion,1);
+
+	trooper_clock=MAX_TROOPER_CLOCK;
 }
 
 void kill_bullet(byte num) {

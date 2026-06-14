@@ -436,31 +436,35 @@ SIDFX	SIDFXBigExplosion[3] = {
 	},	
 };
 
-SIDFX	SFXMessage[3] = {{
-	NOTE_C(8), 2048, 
-	SID_CTRL_RECT | SID_CTRL_GATE,
-	SID_ATK_2 | SID_DKY_48,
-	SID_DKY_300 | 0xd0,
-	0, 0,
-	2, 0,
-	15
-},{
-	NOTE_E(8), 2048, 
-	SID_CTRL_RECT | SID_CTRL_GATE,
-	SID_ATK_2 | SID_DKY_48,
-	SID_DKY_300 | 0xd0,
-	0, 0,
-	2, 0,
-	15
-},{
-	NOTE_C(9), 2048, 
-	SID_CTRL_RECT | SID_CTRL_GATE,
-	SID_ATK_2 | SID_DKY_48,
-	SID_DKY_750 | 0xd0,
-	0, 0,
-	2, 16,
-	5
-}};
+SIDFX	SFXMessage[3] = {
+    {
+        NOTE_C(8), 2048, 
+        SID_CTRL_RECT | SID_CTRL_GATE,
+        SID_ATK_2 | SID_DKY_48,
+        SID_DKY_300 | 0xd0,
+        0, 0,
+        2, 0,
+        15
+    },
+    {
+	    NOTE_E(8), 2048, 
+        SID_CTRL_RECT | SID_CTRL_GATE,
+        SID_ATK_2 | SID_DKY_48,
+        SID_DKY_300 | 0xd0,
+        0, 0,
+        2, 0,
+        15
+    },
+    {
+        NOTE_C(9), 2048, 
+        SID_CTRL_RECT | SID_CTRL_GATE,
+        SID_ATK_2 | SID_DKY_48,
+        SID_DKY_750 | 0xd0,
+        0, 0,
+        2, 16,
+        5
+    }
+};
 
 SIDFX	SIDFXZombieHit[1] = {{
 	4000, 4096,
@@ -655,11 +659,21 @@ SIDFX SFXOpening[13] = {
     },
     {
         NOTE_A(7), 2048,
-        SID_CTRL_GATE | SID_CTRL_TRI,
+        SID_CTRL_GATE | SID_CTRL_RECT,
         SID_ATK_16 | SID_DKY_6,
-        0xf0  | SID_DKY_168,
+        0xf0 | SID_DKY_168,
         0, 0,
         4, 8,
         5
     }
 };
+
+SIDFX	SIDFXQuickExplosion[1] = {{
+	1000, 1000, 
+	SID_CTRL_GATE | SID_CTRL_NOISE,
+	SID_ATK_2 | SID_DKY_6,
+	0xf0  | SID_DKY_1500,
+	-20, 0,
+	4, 8,
+	30
+}};
