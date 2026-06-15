@@ -15,6 +15,9 @@ const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock=MAX_TROOPER_CLOCK;
 
 const byte TROOPER_CHAR=152;
+//const gives a compiler error?
+//const byte TROOPER_COLOR=VCOL_BROWN;
+#define TROOPER_COLOR VCOL_DARK_GREY
 const byte EMPTY_CHAR=0x20;
 
 /**
@@ -42,6 +45,7 @@ __export int ty;
 __export int tx2;
 __export int ty2;
 
+int score=0;
 
 
 int main() {
@@ -93,10 +97,10 @@ int main() {
 	rirq_sort();
 
 	rirq_start();
-	//edcbedcbedcba
 	int frame_num=0;
 
-	sidfx_play(1,SFXOpening,13);
+	/////////edcbedcbedcba
+	sidfx_play(1,SFXReveille,20);
 
 	while (game_state==GS_RUNNING) {
 
@@ -133,13 +137,17 @@ int main() {
 }
 
 void init_screen(byte num_stars) {
+	memcpy(screen,title_screen,1000);
+	memcpy(charset, stored_charset, 0x800);
+	memcpy(spriteset, stored_spriteset, 1280);
+
 	vic_setmode(VICM_TEXT,screen,charset);
 
 	//memset(screen,0x20,1000);
 	memset(color,1,1000);
 
 	vic.color_border=VCOL_BLACK;
-	vic.color_back=VCOL_BLACK;
+	vic.color_back=VCOL_LT_BLUE;
 
 	//NOTE: can't unroll this loop, since the bounds are not constant
 	//#pragma unroll(full)
@@ -269,7 +277,7 @@ void move_troopers() {
 		int y=TO_INT(troopers[i].y);
 
 		//Why (y-44) instead of (y-49)? Because the shape starts at (2,7) in the sprite.
-		int screen_loc=((y-44)/8)*40+(x-23)/8;
+		int screen_loc=((y-50)/8)*40+(x-23)/8;
 
 		if (screen[screen_loc+40]!=EMPTY_CHAR) {
 			land_trooper(i,screen_loc);
@@ -288,7 +296,7 @@ void land_trooper(int trooper_num, int screen_loc) {
 	vspr_hide(troopers[trooper_num].vsprite_num+NUM_TROOPERS);	//chute
 
 	screen[screen_loc]=TROOPER_CHAR; //placeholder for trooper character
-	color[screen_loc]=VCOL_GREEN;
+	color[screen_loc]=TROOPER_COLOR;
 
 	trooper_clock=MAX_TROOPER_CLOCK;
 
@@ -303,11 +311,11 @@ void add_troopers() {
 		}
 		byte r=0;
 		do {
-			r=rand() % 39;
+			r=rand() % 37 + 1;
 		} while (r>18 && r<22);
 
-		int x=23+(r*8);
-		byte y=56;
+		int x=25+(r*8);
+		byte y=50;
 		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),
 			(fx_96)TROOPER_CHUTE_SPEED);//speed = n/64
 	}
@@ -374,9 +382,9 @@ void handle_inputs() {
 				if (! fire_bullet_now()) {
 					// vic.color_back=VCOL_RED;
 				}
-				else {
-					vic.color_back=VCOL_BLACK;
-				}
+				// else {
+				// 	vic.color_back=VCOL_BLACK;
+				// }
 				bullet_clock = MAX_BULLET_CLOCK;
 			}
 		}
@@ -384,9 +392,9 @@ void handle_inputs() {
 			if (!fire_bullet_now()) {
 				//vic.color_back=VCOL_RED;
 			}
-			else {
-				vic.color_back=VCOL_BLACK;
-			}
+			// else {
+			// 	vic.color_back=VCOL_BLACK;
+			// }
 
 			is_firing=true;
 			bullet_clock == MAX_BULLET_CLOCK;
@@ -489,4 +497,8 @@ void kill_trooper(byte num) {
 void kill_bullet(byte num) {
 	bullets[num].active = false;
 	vspr_hide(bullets[num].vsprite_num);
+}
+
+void show_score() {
+	
 }

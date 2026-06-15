@@ -1,9 +1,8 @@
-#define SPRITE_FILE "resources/sabotage64-0.3.6.spd"
-#define SCREEN_FILE "resources/sabotage64 text 0.4.bin"
-#define CHAR_FILE	"resources/Sabotage64 (ROM charset) 0.3.ctm"
+#define SPRITE_FILE 		"resources/sabotage64-0.3.6.spd"
+#define PLAY_SCREEN_FILE 	"resources/sabotage64 text 0.5.bin"
+#define CHAR_FILE			"resources/Sabotage64 (ROM charset) 0.4.ctm"
 
 //#pragma region( lower, 0xa00, 0x0fff, , , {code} )
-#pragma region( lower, 0xa00, 0x8000, , , {heap, stack, code, data, bss} )
 
 
 // #pragma section(music_sec, 0)
@@ -20,36 +19,64 @@
 // #pragma region(logo_screen_reg, 0x6000, 0x63ff,,,{logo_screen_sec})
 // #pragma region(logo_color_reg, 0x6400, 0x6fff,,,{logo_color_sec})
 
-#pragma section(charset_rec,0)
-#pragma region(charset_reg,0x8000,0x8800,,,{charset_rec})
-#pragma data(charset_rec)
-const char charset[] = {
+//#pragma region( lower, 0xa00, 0x0fff, , , {code} )
+
+#pragma section(stored_charset_sec,0)
+//#pragma region(charset_reg,0x8000,0x8800,,,{charset_rec})
+#pragma region(stored_charset_reg,0x0a00,0x1200,,,{stored_charset_sec})
+#pragma data(stored_charset_sec)
+const char stored_charset[] = {
 	#embed ctm_chars CHAR_FILE
 };
-#pragma reference(charset)
+#pragma reference(stored_charset)
 
-#pragma section(screen_sec, 0)
-#pragma region(screen_reg,0x8800,0x8c00,,,{screen_sec})
-#pragma data (screen_sec)
-char screen[] = {
-	#embed SCREEN_FILE
+#pragma section(title_screen_sec,0)
+//#pragma region(title_screen_reg, x08c00, 0x8fe8,,,{title_screen_sec})
+#pragma region(title_screen_reg, 0x1200, 0x15e8,,, {title_screen_sec})
+#pragma data(title_screen_sec)
+const char title_screen[] = {
+	#embed PLAY_SCREEN_FILE
 };
-#pragma reference(screen)
+#pragma reference(title_screen)
 
-#pragma region( main, 0x8c00, 0xbb00, , , {heap, stack, code, data, bss} )
-
-#pragma section( spriteset_sec, 0)
-#pragma region( spriteset_reg, 0xbb00, 0xc000,,, {spriteset_sec} )
-#pragma data(spriteset_sec)
-__export char const spriteset[] =  {
+#pragma section(stored_spriteset_sec,0)
+#pragma region(stored_spriteset_reg, 0x15e8,0x1ae8,,,{stored_spriteset_sec})
+#pragma data(stored_spriteset_sec)
+const char stored_spriteset[] =  {
 	#embed spd_sprites SPRITE_FILE
 
 };
-#pragma reference(spriteset)
+
+#pragma region( main, 0x1e00, 0x7fff, , , {heap, stack, code, data, bss} )
 
 
+#pragma section(charset_sec,0)
+#pragma region(charset_reg,0x8000,0x8800,,,{charset_sec})
+// #pragma data(charset_sec)
+// char charset[0x800];
+// #pragma reference(charset)
 
+#pragma section(screen_sec, 0)
+#pragma region(screen_reg,0x8800,0x8c00,,,{screen_sec})
+// #pragma data(screen_sec)
+// char screen[0x3e8];// = {
+// // 	#embed SCREEN_FILE
+// // };
+// #pragma reference(screen)
 
+#pragma region(middle, 0x8c00, 0xa000,,,{code, data, bss})
+
+//NOTE:we can't put our sprites at $8c00, since they go on to like $9100,
+//	and in this memory config the default character set gets mapped to $9000
+#pragma section(spriteset_sec, 0)
+#pragma region(spriteset_reg, 0xa000, 0xa500,,, {spriteset_sec} )
+// #pragma data(spriteset_sec)
+// const char spriteset[0x500];// =  {
+// // 	#embed spd_sprites SPRITE_FILE
+// // };
+// #pragma reference(spriteset)
+
+#pragma region( upper, 0x9a00, 0xcfff, , , {heap, stack, code, data, bss} )
 
 // #pragma section(color_sec, 0)
 // #pragma region(color_reg, 0xd800, 0xdc00,,,{color_sec})
@@ -93,3 +120,12 @@ __export char const spriteset[] =  {
 // };
 
 #pragma data(data)
+
+char *charset=(char *)0x8000;
+#pragma reference(charset)
+
+char *screen=(char *)0x8800;
+#pragma reference(screen)
+
+char *spriteset=(char *)0xa000;
+#pragma reference(spriteset)

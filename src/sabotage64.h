@@ -11,19 +11,19 @@
 #include <c64/joystick.h>
 #include <c64/keyboard.h>
 #include <audio/sidfx.h>
-
+#include <string.h>
 
 //#define TOTAL_VSPRITES 		16
-#define NUM_TROOPERS 		4
+#define NUM_TROOPERS 		8
 #define NUM_CHUTES			NUM_TROOPERS
-#define NUM_BULLETS 		5
+#define NUM_BULLETS 		4
 //actual bullet speed is this value /64
 #define BULLET_SPEED		120
 
 //If defined, all shots automatically hit
 //#define PERFECT_SHOT
 
-#define SPRITE_OFFSET		0xec
+#define SPRITE_OFFSET		0x80
 #define CHUTE_SPRITE		SPRITE_OFFSET+0
 #define TROOPER_SPRITE		SPRITE_OFFSET+1
 #define BULLET_SPRITE		SPRITE_OFFSET+18

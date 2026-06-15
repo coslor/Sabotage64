@@ -9,7 +9,7 @@
     "definitions": [],
     "includes": [],
     "args": [
-        "-DVSPRITES_MAX=20",
+        "-DVSPRITES_MAX=22",
         "-DNUM_IRQS=40"
     ],
     "compiler": ""

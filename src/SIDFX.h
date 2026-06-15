@@ -592,6 +592,8 @@ SIDFX SFXOpening[13] = {
         4, 8,
         5
     },
+
+
     {
         NOTE_D(8), 2048,
         SID_CTRL_GATE | SID_CTRL_RECT,
@@ -677,3 +679,230 @@ SIDFX	SIDFXQuickExplosion[1] = {{
 	4, 8,
 	30
 }};
+
+//G,C,E,C,G,  ECECG, ECECG, CEC
+SIDFX SFXReveille[20] = {
+	//G
+	{
+        NOTE_G(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },
+	//C
+    {
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },
+	//E
+    {
+        NOTE_E(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        4, 8,
+        5
+    },
+	//C    
+	{
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        4, 8,
+        5
+    },
+	//G    
+	{
+        NOTE_G(7), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf0,
+        0, 0,
+        8, 12,
+        5
+    },
+
+//ECECG
+
+	//E   
+	{
+        NOTE_E(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },	
+	//C
+    {
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },	
+	//E   
+	{
+        NOTE_E(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        4, 8,
+        5
+    },	
+	//C
+    {
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        4, 8,
+        5
+    },	
+	//G
+    {
+        NOTE_G(7), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },
+
+//ECECG
+	//E   
+	{
+        NOTE_E(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },	
+	//C
+    {
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },	
+	//E   
+	{
+        NOTE_E(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        4, 8,
+        5
+    },	
+	//C
+    {
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        4, 8,
+        5
+    },	
+	//G
+    {
+        NOTE_G(7), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+    },
+
+	//CE_C
+	//C	
+	{
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+	},
+	//E   
+	{
+        NOTE_E(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        16, 12,
+        5
+    },
+	//C	
+	{
+        NOTE_C(8), 2048,
+        SID_CTRL_GATE | SID_CTRL_RECT,
+        //SID_ATK_16 | SID_DKY_6,
+        0x14,
+        //0xf0  | SID_DKY_168,
+        0xf4,
+        0, 0,
+        8, 12,
+        5
+	}
+};
