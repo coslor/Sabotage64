@@ -691,7 +691,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },
 	//C
@@ -703,7 +703,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },
 	//E
@@ -715,7 +715,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        4, 8,
+        2, 4,
         5
     },
 	//C    
@@ -727,7 +727,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        4, 8,
+        2, 4,
         5
     },
 	//G    
@@ -739,7 +739,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf0,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },
 
@@ -754,7 +754,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },	
 	//C
@@ -766,7 +766,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },	
 	//E   
@@ -778,7 +778,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        4, 8,
+        2, 4,
         5
     },	
 	//C
@@ -790,7 +790,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        4, 8,
+        2, 4,
         5
     },	
 	//G
@@ -802,7 +802,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },
 
@@ -816,7 +816,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },	
 	//C
@@ -828,7 +828,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },	
 	//E   
@@ -840,7 +840,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        4, 8,
+        2, 4,
         5
     },	
 	//C
@@ -852,7 +852,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        4, 8,
+        2, 4,
         5
     },	
 	//G
@@ -864,7 +864,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
     },
 
@@ -878,7 +878,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
 	},
 	//E   
@@ -902,7 +902,7 @@ SIDFX SFXReveille[20] = {
         //0xf0  | SID_DKY_168,
         0xf4,
         0, 0,
-        8, 12,
+        4, 8,
         5
 	}
 };
