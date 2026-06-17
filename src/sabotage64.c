@@ -14,11 +14,10 @@ MOB bullets[NUM_BULLETS];
 const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock=MAX_TROOPER_CLOCK;
 
-const byte TROOPER_CHAR=152;
-//const gives a compiler error?
+//TODO Is this a compiler bug? If so, file it with DMW
 //const byte TROOPER_COLOR=VCOL_BROWN;
+
 #define TROOPER_COLOR VCOL_DARK_GREY
-const byte EMPTY_CHAR=0x20;
 
 /**
  * Angles look like:
@@ -276,12 +275,29 @@ void move_troopers() {
 		int x=TO_INT(troopers[i].x);
 		int y=TO_INT(troopers[i].y);
 
+		
 		//Why (y-44) instead of (y-49)? Because the shape starts at (2,7) in the sprite.
-		int screen_loc=((y-50)/8)*40+(x-23)/8;
+		int screen_loc=calc_screen_offset(x,y); //((y-50)/8)*40+(x-23)/8;
 
-		if (screen[screen_loc+40]!=EMPTY_CHAR) {
+
+		char c = screen[screen_loc+40];
+		if ((c==GROUND_CHAR) || (c==BUILDING_CHAR) || (c==HALF_GROUND_SQUARE)) {
 			land_trooper(i,screen_loc);
 			continue;
+		}
+		else {	//check to see if there are already 3 troopers stacked up. If so, no more.
+			if ((y<920) && (screen[screen_loc+40] == TROOPER_CHAR)) {
+				if (((y<880) && ((screen[screen_loc+80]==TROOPER_CHAR) || (screen[screen_loc+80]==BUILDING_CHAR)))
+					&& ((y<840) && (screen[screen_loc+120]==TROOPER_CHAR) 
+									|| (screen[screen_loc+120]==BUILDING_CHAR) ) ) { //too many troopers stacked up
+						stop_trooper(i);
+						continue;
+				}
+				else {
+					land_trooper(i,screen_loc);
+					continue;
+				}
+			}
 		}
 
 		vspr_movey(troopers[i].vsprite_num,y-7);
@@ -289,17 +305,26 @@ void move_troopers() {
 	}	
 }
 
-void land_trooper(int trooper_num, int screen_loc) {
+//Figure out the screen memory offset (from 0-999) for a given (x,y) character position)
+inline int calc_screen_offset(int x, int y) {
+		int screen_loc=((y-50)/8)*40+(x-23)/8;
+		return screen_loc;
+}
+
+void land_trooper(char trooper_num, int screen_loc) {
+	stop_trooper(trooper_num);
+	screen[screen_loc]=TROOPER_CHAR;
+	color[screen_loc]=TROOPER_COLOR;
+
+	//TODO is this necessary or useful?
+	//trooper_clock=MAX_TROOPER_CLOCK;
+}
+
+void stop_trooper(char trooper_num) {
 	troopers[trooper_num].speed_y=0;
 	troopers[trooper_num].active=false;
 	vspr_hide(troopers[trooper_num].vsprite_num);
 	vspr_hide(troopers[trooper_num].vsprite_num+NUM_TROOPERS);	//chute
-
-	screen[screen_loc]=TROOPER_CHAR; //placeholder for trooper character
-	color[screen_loc]=TROOPER_COLOR;
-
-	trooper_clock=MAX_TROOPER_CLOCK;
-
 }
 
 void add_troopers() {

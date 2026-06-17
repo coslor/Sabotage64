@@ -53,6 +53,14 @@
 
 #define TROOPER_CHUTE_SPEED	16
 #define TROOPER_NO_CHUTE_SPEED 32
+
+const byte TROOPER_CHAR=152;
+const byte EMPTY_CHAR=0x20;
+const byte GROUND_CHAR=0xa0;
+const byte BUILDING_CHAR=0x80;
+//half-square used on screen to give the "SCORE" display a little more room
+const byte HALF_GROUND_SQUARE=0xf9;	
+
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
  */
@@ -118,7 +126,9 @@ void init_screen(byte num_stars);
 void init_troopers();
 void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y);
 void move_troopers();
-void land_trooper(int trooper_num, int screen_loc);
+inline int calc_screen_offset(int x, int y);
+void land_trooper(char trooper_num, int screen_loc);
+void stop_trooper(char trooper_num);
 byte find_trooper(bool active);
 void add_troopers();
 
@@ -138,3 +148,4 @@ void kill_trooper(byte num);
 void kill_bullet(byte num);
 
 void steer_bullets();
+
