@@ -1,17 +1,16 @@
 #include "sabotage64.h"
 
-#include "SIDFX.h"
 
 
 // const char* hello_text = "HELLO, WORLD!";
 //char* screen = (char*) (0x8000);
 unsigned char* color = (unsigned char*) (0xd800);
 
-MOB troopers[NUM_TROOPERS];
+MOB troopers[MAX_TROOPERS];
 MOB bullets[NUM_BULLETS];
 //fx_96 speed=0; //for debugger
 
-const byte MAX_TROOPER_CLOCK=90;
+//const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock;
 
 //TODO Is this a compiler bug? If so, file it with DMW
@@ -72,16 +71,17 @@ int main() {
 				draw_barrel();
 				init_bullets();
 				score=0;
-				trooper_clock=MAX_TROOPER_CLOCK;
+				trooper_clock=levels[current_level].max_trooper_clock;
 				barrel_dir=TO_FX96(3);
 				bullet_clock=MAX_BULLET_CLOCK;
 				is_firing=false;
+				current_level = 0;
 
 				game_state = GS_RUNNING;
 				break;
 			}
 			case GS_RUNNING: {
-				running();				
+				run_game();				
 				break;
 			}
 			case GS_STOPPING:{
@@ -104,8 +104,6 @@ void init_screen() {
 	vic.color_back=VCOL_LT_BLUE;
 
 }
-
-
 
 void init_bullets() {
 	#pragma unroll(full)
@@ -204,8 +202,9 @@ void drop_trooper(byte num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
 
 
 void move_troopers() {
-	#pragma unroll(full)
-	for (int i=0;i<NUM_TROOPERS;i++) {
+	//#pragma unroll(full)
+	byte mt=levels[current_level].max_troopers;
+	for (int i=0;i<mt;i++) {
 		if (!troopers[i].active) {
 			continue;
 		}
@@ -264,12 +263,12 @@ void stop_trooper(char trooper_num) {
 	troopers[trooper_num].speed_y=0;
 	troopers[trooper_num].active=false;
 	vspr_hide(troopers[trooper_num].vsprite_num);
-	vspr_hide(troopers[trooper_num].vsprite_num+NUM_TROOPERS);	//chute
+	vspr_hide(troopers[trooper_num].vsprite_num+MAX_TROOPERS);	//chute
 }
 
 void add_troopers() {
 	if (--trooper_clock == 0) {
-		trooper_clock=MAX_TROOPER_CLOCK;
+		trooper_clock=levels[current_level].max_trooper_clock;
 		byte tnum=find_trooper(false); //find 1st inactive trooper
 		if (tnum==0xff) {
 			return;	//no troopers available
@@ -288,8 +287,8 @@ void add_troopers() {
 
 /** @return the index of the next inactive trooper, or 0xff if all troopers are active */
 byte find_trooper(bool active) {
-	#pragma unroll(full)
-	for (byte i=0;i<NUM_TROOPERS;i++) {
+	byte mt=levels[current_level].max_troopers;
+	for (byte i=0;i<mt;i++) {
 		if (troopers[i].active == active) {
 			return i;
 		}
@@ -433,8 +432,8 @@ void check_bullet_collisions() {
 		if (! bullet->active) {
 			continue;
 		}
-		#pragma unroll(full)
-		for (int j=0;j<NUM_TROOPERS;j++) {
+		byte mt=levels[current_level].max_troopers;
+		for (int j=0;j<mt;j++) {
 			MOB *trooper=&troopers[j];
 			if (! trooper->active) {
 				continue;
@@ -456,7 +455,7 @@ void kill_trooper(byte num) {
 	vspr_hide(troopers[num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
 	sidfx_play(1,SIDFXQuickExplosion,1);
 
-	trooper_clock=MAX_TROOPER_CLOCK;
+	trooper_clock=levels[current_level].max_trooper_clock;
 }
 
 void kill_bullet(byte num) {
@@ -469,7 +468,8 @@ void show_score() {
 }
 
 void clear_troopers() {
-	for (int i=0;i<NUM_TROOPERS;i++) {
+	byte mt=levels[current_level].max_troopers;
+	for (int i=0;i<mt;i++) {
 		if (troopers[i].active) {
 			stop_trooper(i);
 		}
@@ -504,7 +504,7 @@ void initial_start() {
 
 }
 
-void running() {
+void run_game() {
 	handle_inputs();
 
 	check_bullet_collisions();
@@ -518,6 +518,11 @@ void running() {
 
 	sidfx_loop();
 
+	update_vsprites();
+
+}
+
+void update_vsprites() {
 	//NOTE:Do these in the stated order! It can make a BIG performence difference!
 	// 1. sort virtual sprites by y position
 	vspr_sort();

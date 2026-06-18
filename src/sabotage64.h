@@ -1,4 +1,5 @@
 #include "sabotage64_memory.h"
+#include "SIDFX.h"
 #include <c64/sprites.h>
 #include <c64/rasterirq.h>
 #include <c64/vic.h>
@@ -13,9 +14,11 @@
 #include <audio/sidfx.h>
 #include <string.h>
 
-//#define TOTAL_VSPRITES 		16
-#define NUM_TROOPERS 		8
-#define NUM_CHUTES			NUM_TROOPERS
+#define VSPRITES_MAX		22	//32
+#define NUM_IRQS			30	//40
+
+#define MAX_TROOPERS 		8
+#define NUM_CHUTES			MAX_TROOPERS
 #define NUM_BULLETS 		4
 //actual bullet speed is this value /64
 #define BULLET_SPEED		120
@@ -35,7 +38,7 @@
 **/
 
 #define VS_TROOPER_OFFSET	1
-#define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + NUM_TROOPERS
+#define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + MAX_TROOPERS
 #define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + NUM_CHUTES
 #define VS_BARREL_OFFSET	0
 
@@ -54,12 +57,15 @@
 #define TROOPER_CHUTE_SPEED	16
 #define TROOPER_NO_CHUTE_SPEED 32
 
+
+/*** Screen codes  ***/
 const byte TROOPER_CHAR=152;
 const byte EMPTY_CHAR=0x20;
 const byte GROUND_CHAR=0xa0;
 const byte BUILDING_CHAR=0x80;
 //half-square used on screen to give the "SCORE" display a little more room
 const byte HALF_GROUND_SQUARE=0xf9;	
+
 
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
@@ -87,6 +93,25 @@ typedef enum {
 } GameState;
 GameState game_state=GS_INITIAL_START;
 
+
+/*** Level Stuff *****/
+#define NUM_LEVELS			1
+typedef struct Level {
+	//max # of troopers onscreen at once
+	byte 	max_troopers;
+	//how closely the troopers are clustered together; higher #s mean further apart
+	byte 	max_trooper_clock;
+} Level;
+
+Level levels[] = {
+	{
+		4,
+		90
+	}
+};
+byte current_level;
+
+
 /****Fixed Point 9.6 Stuff ****/
 typedef signed int fx_96;
 
@@ -95,12 +120,12 @@ typedef signed int fx_96;
 
 /**** MOB Stuff  ****/
 
-typedef struct Box {
-	fx_96			x;
-	fx_96			y;
-	fx_96			end_x;
-	fx_96			end_y;
-} Box;
+// typedef struct Box {
+// 	fx_96			x;
+// 	fx_96			y;
+// 	fx_96			end_x;
+// 	fx_96			end_y;
+// } Box;
 
 typedef struct MOB {
 	byte			vsprite_num;
@@ -153,4 +178,6 @@ void clear_all();
 
 /** Game States **/
 void initial_start();
-void running();
+void run_game();
+
+void update_vsprites();
