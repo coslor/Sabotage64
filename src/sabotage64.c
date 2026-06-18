@@ -220,29 +220,46 @@ void move_troopers() {
 
 
 		char c = screen[screen_loc+40];
-		if ((c==GROUND_CHAR) || (c==BUILDING_CHAR) || (c==HALF_GROUND_SQUARE)) {
-			land_trooper(i,screen_loc);
-			continue;
-		}
-		else {	//check to see if there are already 3 troopers stacked up. If so, no more.
-			if ((y<920) && (screen[screen_loc+40] == TROOPER_CHAR)) {
-				if (((y<880) && ((screen[screen_loc+80]==TROOPER_CHAR) || (screen[screen_loc+80]==BUILDING_CHAR)))
-					&& ((y<840) && (screen[screen_loc+120]==TROOPER_CHAR) 
-									|| (screen[screen_loc+120]==BUILDING_CHAR) ) ) { //too many troopers stacked up
-						stop_trooper(i);
-						continue;
-				}
-				else {
-					land_trooper(i,screen_loc);
-					continue;
-				}
+		if (! troopers[i].has_chute) {
+			if ((c==GROUND_CHAR) || (c==BUILDING_CHAR) || (c==HALF_GROUND_SQUARE)) {
+				smoosh_trooper(i,screen_loc);
+				continue;
 			}
-		}
+			else if (c==TROOPER_CHAR) {
+				screen[screen_loc+40]=EMPTY_CHAR;
+			}
+		}//if ! chute
+		//TODO what happens if smooshed char?
+		else {	//has chute
+			if ((c==GROUND_CHAR) || (c==BUILDING_CHAR) || (c==HALF_GROUND_SQUARE)) {
+				land_trooper(i,screen_loc);
+				continue;
+			}
+			else {	//check to see if there are already 3 troopers stacked up. If so, no more.
+				if ((y<920) && (screen[screen_loc+40] == TROOPER_CHAR)) {
+					if (((y<880) && ((screen[screen_loc+80]==TROOPER_CHAR) || (screen[screen_loc+80]==BUILDING_CHAR)))
+						&& ((y<840) && (screen[screen_loc+120]==TROOPER_CHAR) 
+										|| (screen[screen_loc+120]==BUILDING_CHAR) ) ) { //too many troopers stacked up
+							stop_trooper(i);
+							continue;
+					}
+					else {
+						land_trooper(i,screen_loc);
+						continue;
+					}//else land trooper
+				}//else if y<880
+			}//else if y<920
+		}//else if c==GROUND_CHAR
 
 		vspr_movey(troopers[i].vsprite_num,y-7);
-		vspr_movey(troopers[i].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,y-7);	//chute
-	}	
-}
+		if (troopers[i].has_chute) {
+			vspr_movey(troopers[i].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,y-7);	//chute
+		}
+		// else {
+		// 	vspr_hide(troopers[i].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
+		// }
+	}//for	
+}//move_troopers()
 
 //Figure out the screen memory offset (from 0-999) for a given (x,y) character position)
 inline int calc_screen_offset(int x, int y) {
@@ -250,15 +267,26 @@ inline int calc_screen_offset(int x, int y) {
 		return screen_loc;
 }
 
+//Stops, deactivates, hides trooper & leaves trooper char
 void land_trooper(char trooper_num, int screen_loc) {
 	stop_trooper(trooper_num);
 	screen[screen_loc]=TROOPER_CHAR;
 	color[screen_loc]=TROOPER_COLOR;
-
 	//TODO is this necessary or useful?
 	//trooper_clock=MAX_TROOPER_CLOCK;
 }
 
+//stops, deactivates, hides trooper; leaves smooshed char; deactivates & hides trooper, hides chute, plays explosion, incs score, resets trooper clock
+void smoosh_trooper(char trooper_num, int screen_loc) {
+	stop_trooper(trooper_num);
+	//TODO animate smooshed trooper
+	screen[screen_loc]=SMOOSHED_CHAR;
+	color[screen_loc]=VCOL_RED;
+	kill_trooper(trooper_num);
+}
+
+#pragma optimize(0)
+//stops, deactivates, and hides trooper
 void stop_trooper(char trooper_num) {
 	troopers[trooper_num].speed_y=0;
 	troopers[trooper_num].active=false;
@@ -393,25 +421,18 @@ bool fire_bullet_now() {
 		return false;
 	}
 
-#ifdef DEBUG
-	if (TO_INT(barrel_dir)>6) {
-		vic.color_border=VCOL_PURPLE;
-		while(true);
-	}
-#endif
-
 	byte bd=BARREL_ANGLES[TO_INT(barrel_dir)];
 
 	fx_96 bullet_x=TO_FX96(BARREL_X+11);
 	fx_96 bullet_y=TO_FX96(BARREL_Y+17);
 
-#ifdef PERFECT_SHOT
-	byte trooper_num=find_trooper(true);
-	if (trooper_num != 0xff) {
-		bullet_x = troopers[trooper_num].x+2;
-		bullet_y = troopers[trooper_num].y+2;
-	}
-#endif
+	#ifdef PERFECT_SHOT
+		byte trooper_num=find_trooper(true);
+		if (trooper_num != 0xff) {
+			bullet_x = troopers[trooper_num].x+2;
+			bullet_y = troopers[trooper_num].y+2;
+		}
+	#endif
 
 	//speed is a fraction, actual value is speed/64)
 	fire_bullet(&bullets[bullet_num],bullet_x, bullet_y, bd,(fx_96)BULLET_SPEED);
@@ -420,48 +441,69 @@ bool fire_bullet_now() {
 }
 
 
-bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy) {
+inline bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy) {
 
 	return (x >= bx && x <=b_endx && y>=by && y<=b_endy);
 }
 
+//#pragma optimize(0)
 void check_bullet_collisions() {
 	#pragma unroll(full)
-	for (int i=0;i<NUM_BULLETS;i++) {
-		MOB *bullet = &bullets[i];
+	for (int bn=0;bn<NUM_BULLETS;bn++) {
+		MOB *bullet = &bullets[bn];
 		if (! bullet->active) {
 			continue;
 		}
 		byte mt=levels[current_level].max_troopers;
-		for (int j=0;j<mt;j++) {
-			MOB *trooper=&troopers[j];
+		for (int tn=0;tn<mt;tn++) {
+			MOB *trooper=&troopers[tn];
 			if (! trooper->active) {
 				continue;
 			}
 			if (point_is_in_box(bullet->x,bullet->y,
 					trooper->x,trooper->y,trooper->end_x,trooper->end_y)) {
-				kill_trooper(j);
-				kill_bullet(i);
+				kill_trooper(tn);
+				kill_bullet(bn);
+				continue;
+			} else if(point_is_in_box(bullet->x,bullet->y,
+					trooper->x - TO_FX96(2),trooper->y - TO_FX96(7),
+					trooper->end_x - TO_FX96(2),trooper->end_y - TO_FX96(7))) {
+				kill_chute(tn);
+				kill_bullet(bn);
+				continue;
 			}//if point
 		}//for j
 	}//for i
 }//check_bullet_collisions
 
 
-void kill_trooper(byte num) {
+//deactivates & hides trooper, hides chute, plays explosion, incs score, resets trooper clock
+void kill_trooper(byte trooper_num) {
 	//vspr_color(troopers[num].vsprite_num,VCOL_RED);
-	troopers[num].active=false;
-	vspr_hide(troopers[num].vsprite_num);
-	vspr_hide(troopers[num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
+	troopers[trooper_num].active=false;
+	vspr_hide(troopers[trooper_num].vsprite_num);
+	vspr_hide(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
 	sidfx_play(1,SIDFXQuickExplosion,1);
+
+	score += 5;
 
 	trooper_clock=levels[current_level].max_trooper_clock;
 }
 
-void kill_bullet(byte num) {
-	bullets[num].active = false;
-	vspr_hide(bullets[num].vsprite_num);
+void kill_bullet(byte bullet_num) {
+	bullets[bullet_num].active = false;
+	vspr_hide(bullets[bullet_num].vsprite_num);
 }
+
+void kill_chute(byte trooper_num) {
+	troopers[trooper_num].has_chute = false;
+	troopers[trooper_num].speed_y *= 2;
+	byte vsprite_num=troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET;
+	vspr_hide(vsprite_num);
+	vspr_image(troopers[trooper_num].vsprite_num, TROOPER_SPRITE+1);
+	//TODO implement animation for falling trooper
+}
+
 
 void show_score() {
 	

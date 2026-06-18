@@ -59,10 +59,11 @@
 
 
 /*** Screen codes  ***/
-const byte TROOPER_CHAR=152;
-const byte EMPTY_CHAR=0x20;
-const byte GROUND_CHAR=0xa0;
+const byte TROOPER_CHAR	=152;
+const byte EMPTY_CHAR	=0x20;
+const byte GROUND_CHAR	=0xa0;
 const byte BUILDING_CHAR=0x80;
+const byte SMOOSHED_CHAR=153;
 //half-square used on screen to give the "SCORE" display a little more room
 const byte HALF_GROUND_SQUARE=0xf9;	
 
@@ -153,6 +154,7 @@ void drop_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 sp
 void move_troopers();
 inline int calc_screen_offset(int x, int y);
 void land_trooper(char trooper_num, int screen_loc);
+void smoosh_trooper(char trooper_num, int screen_loc);
 void stop_trooper(char trooper_num);
 byte find_trooper(bool active);
 void add_troopers();
@@ -169,8 +171,10 @@ void draw_barrel();
 void handle_inputs();
 bool fire_bullet_now();
 
-void kill_trooper(byte num);
-void kill_bullet(byte num);
+void kill_trooper(byte trooper_num);
+void kill_bullet(byte bullet_num);
+/** @param num is the trooper num **/
+void kill_chute(byte trooper_num);
 
 void steer_bullets();
 

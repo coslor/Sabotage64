@@ -9,8 +9,8 @@
     "definitions": [],
     "includes": [],
     "args": [
-        "-DxVSPRITES_MAX=22",
-        "-DxNUM_IRQS=40"
+        "-DVSPRITES_MAX=22",
+        "-DNUM_IRQS=40"
     ],
     "compiler": ""
 }
