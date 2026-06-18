@@ -12,7 +12,7 @@ MOB bullets[NUM_BULLETS];
 //fx_96 speed=0; //for debugger
 
 const byte MAX_TROOPER_CLOCK=90;
-byte trooper_clock=MAX_TROOPER_CLOCK;
+byte trooper_clock;
 
 //TODO Is this a compiler bug? If so, file it with DMW
 //const byte TROOPER_COLOR=VCOL_BROWN;
@@ -28,23 +28,13 @@ byte trooper_clock=MAX_TROOPER_CLOCK;
  * 		16
  */
 const byte BARREL_ANGLES[]={32,37,42,48,53,58,0};
-fx_96 barrel_dir=TO_FX96(3);
+fx_96 barrel_dir;//=TO_FX96(3);
 
 const byte MAX_BULLET_CLOCK=20;
-byte bullet_clock=MAX_BULLET_CLOCK;
+byte bullet_clock;//=MAX_BULLET_CLOCK;
 bool is_firing;
 
-////
-// for debugging
-////
-__export int bx;
-__export int by;
-__export int tx;
-__export int ty;
-__export int tx2;
-__export int ty2;
-
-int score=0;
+int score;
 
 
 int main() {
@@ -52,130 +42,77 @@ int main() {
 	mmap_trampoline();
 	mmap_set(MMAP_NO_ROM);
 
-    // Disable CIA interrupts, we do not want interference
-	// with our joystick interrupt
-	cia_init();
-
-	init_screen(25);
-
-	sidfx_init();
-	sid.fmodevol = 15;
-
-
-	// enable raster interrupt via direct path
-	rirq_init(false);
-
-	// initialize sprite multiplexer
-	vspr_init((char*)screen);
-
-	__asm {
-		nop
-	}
-
-	init_barrel();
-	init_bullets();
+	//init_barrel();
 
 	//clock_t time = clock();
-	//srand(time);
 
-	//init_troopers();
 
-	// for (int i=0;i<NUM_BULLETS;i++) {
-	// 	bullets[i].vsprite_num=NUM_TROOPERS+i;
-	// 	bullets[i].type=BULLET;
-		
-	// 	fx_96 speed = (fx_96)16;	//fraction, actual value is speed/64
-	// 	// printf("SPEED=%d\n",speed);
-		
-	// 	fire_bullet(&bullets[i],160,100,32+i*8,speed);
-	// }
-
-	// initial sort and update
-	vspr_sort();
-	vspr_update();
-	rirq_sort();
-
-	rirq_start();
 	int frame_num=0;
 
-	/////////edcbedcbedcba
-	sidfx_play(1,SFXReveille,20);
-
-	while (game_state==GS_RUNNING) {
 
 
-		handle_inputs();
+	while (game_state!=GS_ENDING) {
 
-		check_bullet_collisions();
+		switch (game_state) {
+			case GS_INITIAL_START: {
+				initial_start();
+				game_state = GS_WELCOME;
+				break;
+			}
+			case GS_WELCOME: {
+				game_state = GS_STARTING_GAME;
+				break;
+			}
+			case GS_STARTING_GAME: {
+				srand(1);	//make every game the same TODO: do I want every game the same?
+				//NOTE TO SELF: don't use srand(0) -- every rand() comes out as 0!
+				sidfx_play(1,SFXReveille,20);
+				clear_troopers();
+				init_screen();
+				draw_barrel();
+				init_bullets();
+				score=0;
+				trooper_clock=MAX_TROOPER_CLOCK;
+				barrel_dir=TO_FX96(3);
+				bullet_clock=MAX_BULLET_CLOCK;
+				is_firing=false;
 
-		add_troopers();
-		move_troopers();
-
-		draw_barrel();
-
-		move_bullets();
-
-		sidfx_loop();
-
-		//NOTE:Do these in the stated order! It can make a BIG performence difference!
-		
-		// 1. sort virtual sprites by y position
-		vspr_sort();
-
-		// 2. wait for raster IRQ to reach end of frame
-		rirq_wait();
-
-		// 3. update sprites back to normal and set up raster IRQ for sprites 8 to 31
-		vspr_update();
-
-		// 4. sort raster IRQs
-		rirq_sort();
+				game_state = GS_RUNNING;
+				break;
+			}
+			case GS_RUNNING: {
+				running();				
+				break;
+			}
+			case GS_STOPPING:{
+				game_state = GS_ENDING;
+				break;
+			}
+		}
 	}
 
     return 0;
 }
 
-void init_screen(byte num_stars) {
+void init_screen() {
 	memcpy(screen,title_screen,1000);
 	memcpy(charset, stored_charset, 0x800);
 	memcpy(spriteset, stored_spriteset, 1280);
-
-	vic_setmode(VICM_TEXT,screen,charset);
-
-	//memset(screen,0x20,1000);
 	memset(color,1,1000);
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
-
-	//NOTE: can't unroll this loop, since the bounds are not constant
-	//#pragma unroll(full)
-	// for(byte i=0;i<num_stars;i++) {
-	// 	unsigned int pos;
-	// 	byte* text=(byte*)0x8000;//0x4000;	//FIXME remove magic number
-	// 	byte* color=(byte*)(0xd800);
-
-	// 	while ( text[pos=40+(rand() % 960)] != 32);
-	// 	text[pos]=46; //screencode for "."
-	// 	color[pos]=rand() % 16;
-	// }
-
-	// gotoxy(0,0);
-	// printf("LIVES:XXXXX");
-
-	// gotoxy(15,0);
-	// printf("INVADERS");
-
-	// gotoxy(27,0);
-	// printf("SCORE:000000");
 
 }
 
 
 
 void init_bullets() {
+	#pragma unroll(full)
 	for (byte i=0;i<NUM_BULLETS;i++) {
 		bullets[i].vsprite_num=VS_BULLET_OFFSET+i;
+		bullets[i].active=false;
+		vspr_hide(bullets[i].vsprite_num);
 	}
 }
 
@@ -199,6 +136,7 @@ void fire_bullet(MOB* bullet, fx_96 x, fx_96 y, byte direction, fx_96 speed) {
 
 void move_bullets() {
 
+	#pragma unroll(full)
 	for (int i=0;i<NUM_BULLETS;i++) {
 		MOB* bullet = &bullets[i];
 		//__assume(bullet->type == BULLET);
@@ -224,6 +162,7 @@ void move_bullets() {
 
 /** @return the index of the next inactive trooper, or 0xff if all troopers are active */
 byte find_inactive_bullet() {
+	#pragma unroll(full)
 	for (byte i=0;i<NUM_BULLETS;i++) {
 		if (! bullets[i].active) {
 			return i;
@@ -233,19 +172,19 @@ byte find_inactive_bullet() {
 }
 
 /** **NOTE: x MUST be an even multiple of 8 or the characters on the bottom won't line up!** **/
-void init_trooper(byte num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
+void drop_trooper(byte num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
 	MOB* t=&troopers[num];
 	t->vsprite_num=vsprite_num;
 
 	//NOTE: The sprite goes from 2,7 to 6,14. 
 	t->x=x;//+TO_FX96(2);
-	tx=TO_INT(t->x);
+	//tx=TO_INT(t->x);
 	t->y=y;//y+TO_FX96(7);
-	ty = TO_INT(t->y);
+	//ty = TO_INT(t->y);
 	t->end_x=x+TO_FX96(4);
-	tx2=TO_INT(t->end_x);
+	//tx2=TO_INT(t->end_x);
 	t->end_y=t->y+TO_FX96(7);
-	ty2=TO_INT(t->end_y);
+	//ty2=TO_INT(t->end_y);
 
 
 	t->speed_x=0;
@@ -265,6 +204,7 @@ void init_trooper(byte num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
 
 
 void move_troopers() {
+	#pragma unroll(full)
 	for (int i=0;i<NUM_TROOPERS;i++) {
 		if (!troopers[i].active) {
 			continue;
@@ -341,7 +281,7 @@ void add_troopers() {
 
 		int x=25+(r*8);
 		byte y=50;
-		init_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),
+		drop_trooper(tnum, tnum+VS_TROOPER_OFFSET, TO_FX96(x), TO_FX96(y),
 			(fx_96)TROOPER_CHUTE_SPEED);//speed = n/64
 	}
 }
@@ -361,15 +301,16 @@ byte find_trooper(bool active) {
 /**
  * @param dir the direction of the barrel, from 32 to 0 (or 64)
  */
-void draw_barrel(){
-	int bd=TO_INT(barrel_dir);
-	int spr_num=BARREL_SPRITE_OFFSET+bd;
-	//vspr_image(VS_BARREL_OFFSET,BARREL_SPRITE_OFFSET+TO_INT(barrel_dir));
-	//shouldn't have to make the full call every time, but sometimes it loses the x,y???
-	init_barrel();
-}
+// void draw_barrel(){
+// 	int bd=TO_INT(barrel_dir);
+// 	int spr_num=BARREL_SPRITE_OFFSET+bd;
+// 	//vspr_image(VS_BARREL_OFFSET,BARREL_SPRITE_OFFSET+TO_INT(barrel_dir));
+// 	//shouldn't have to make the full call every time, but sometimes it loses the x,y???
+// 	init_barrel();
+// }
 
-void init_barrel() {
+// void init_barrel() {
+void draw_barrel() {
 	int spr_num=BARREL_SPRITE_OFFSET+TO_INT(barrel_dir);
 	vspr_set(VS_BARREL_OFFSET,
 			BARREL_X,
@@ -387,18 +328,18 @@ void handle_inputs() {
 		if (barrel_dir>=0x10) {
 			barrel_dir-=0x10;
 		}
-#ifdef STEERABLE_BULLETS
-		steer_bullets();
-#endif		
+		#ifdef STEERABLE_BULLETS
+			steer_bullets();
+		#endif		
 	}
 
 	if (key_pressed(KSCAN_S) || key_pressed(KSCAN_L) || joyx[0]==1) {
 		if (barrel_dir<0x180) {
 			barrel_dir+=0x10;
 		}
-#ifdef STEERABLE_BULLETS
-		steer_bullets();
-#endif
+		#ifdef STEERABLE_BULLETS
+			steer_bullets();
+		#endif
 	}
 
 	if (key_pressed(KSCAN_SPACE) || joyb[0]>0) {
@@ -427,6 +368,11 @@ void handle_inputs() {
 	}
 	else {
 		is_firing = false;
+	}
+
+	//for debugging
+	if (key_pressed(KSCAN_STOP)) {
+		game_state = GS_STARTING_GAME;
 	}
 }
 
@@ -487,18 +433,12 @@ void check_bullet_collisions() {
 		if (! bullet->active) {
 			continue;
 		}
-		
+		#pragma unroll(full)
 		for (int j=0;j<NUM_TROOPERS;j++) {
 			MOB *trooper=&troopers[j];
 			if (! trooper->active) {
 				continue;
 			}
-			bx=TO_INT(bullet->x);
-			by=TO_INT(bullets->y);
-			tx=TO_INT(trooper->x);
-			ty=TO_INT(trooper->y);
-			tx2=TO_INT(trooper->end_x);
-			ty2=TO_INT(trooper->end_y);
 			if (point_is_in_box(bullet->x,bullet->y,
 					trooper->x,trooper->y,trooper->end_x,trooper->end_y)) {
 				kill_trooper(j);
@@ -526,4 +466,66 @@ void kill_bullet(byte num) {
 
 void show_score() {
 	
+}
+
+void clear_troopers() {
+	for (int i=0;i<NUM_TROOPERS;i++) {
+		if (troopers[i].active) {
+			stop_trooper(i);
+		}
+	}
+
+}
+
+void initial_start() {
+    // Disable CIA interrupts, we do not want interference
+	// with our joystick interrupt
+	cia_init();
+
+	vic_setmode(VICM_TEXT,screen,charset);
+
+
+	sidfx_init();
+	sid.fmodevol = 15;
+
+
+	// enable raster interrupt via direct path
+	rirq_init(false);
+
+	// initialize sprite multiplexer
+	vspr_init((char*)screen);
+
+	vspr_sort();
+	vspr_update();
+	rirq_sort();
+
+	rirq_start();
+
+
+}
+
+void running() {
+	handle_inputs();
+
+	check_bullet_collisions();
+
+	add_troopers();
+	move_troopers();
+
+	draw_barrel();
+
+	move_bullets();
+
+	sidfx_loop();
+
+	//NOTE:Do these in the stated order! It can make a BIG performence difference!
+	// 1. sort virtual sprites by y position
+	vspr_sort();
+	// 2. wait for raster IRQ to reach end of frame
+	rirq_wait();
+	// 3. update sprites back to normal and set up raster IRQ for sprites 8 to 31
+	vspr_update();
+	// 4. sort raster IRQs
+	rirq_sort();
+
 }

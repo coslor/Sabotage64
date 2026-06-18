@@ -83,9 +83,9 @@ typedef enum MOBType{
 } MobType;
 
 typedef enum {
-	GS_WELCOME, GS_STARTING, GS_RUNNING, GS_STOPPING, GS_ENDING
+	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_RUNNING, GS_STOPPING, GS_ENDING
 } GameState;
-GameState game_state=GS_RUNNING;
+GameState game_state=GS_INITIAL_START;
 
 /****Fixed Point 9.6 Stuff ****/
 typedef signed int fx_96;
@@ -121,10 +121,10 @@ typedef struct MOB {
 
 /****Method Signatures****/
 
-void init_screen(byte num_stars);
+void init_screen();
 
-void init_troopers();
-void init_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y);
+void clear_troopers();
+void drop_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y);
 void move_troopers();
 inline int calc_screen_offset(int x, int y);
 void land_trooper(char trooper_num, int screen_loc);
@@ -149,3 +149,8 @@ void kill_bullet(byte num);
 
 void steer_bullets();
 
+void clear_all();
+
+/** Game States **/
+void initial_start();
+void running();
