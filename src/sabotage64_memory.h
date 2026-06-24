@@ -1,4 +1,4 @@
-#define SPRITE_FILE 		"resources/sabotage64-0.3.6.spd"
+#define SPRITE_FILE 		"resources/sabotage64-0.3.7.spd"
 #define PLAY_SCREEN_FILE 	"resources/sabotage64 text 0.5.bin"
 #define CHAR_FILE			"resources/Sabotage64 (ROM charset) 0.4.ctm"
 
@@ -19,16 +19,16 @@
 // #pragma region(logo_screen_reg, 0x6000, 0x63ff,,,{logo_screen_sec})
 // #pragma region(logo_color_reg, 0x6400, 0x6fff,,,{logo_color_sec})
 
-//#pragma region( lower, 0xa00, 0x0fff, , , {code} )
+#pragma region( lower, 0xa00, 0x1200, , , {code} )
 
-#pragma section(stored_charset_sec,0)
-//#pragma region(charset_reg,0x8000,0x8800,,,{charset_rec})
-#pragma region(stored_charset_reg,0x0a00,0x1200,,,{stored_charset_sec})
-#pragma data(stored_charset_sec)
-const char stored_charset[] = {
-	#embed ctm_chars CHAR_FILE
-};
-#pragma reference(stored_charset)
+//TODO Get a SID version of reveille working
+// #pragma section(sid_sec,0)
+// #pragma region(sid_sec, 0x0ff6, 0x1fff,,,{sid_sec})
+// #pragma data(sid_sec)
+// const char music[] = {
+// 	#embed 0x01c3 0x7e "DoReMi1000.sid"
+// };
+// #pragma reference(music)
 
 #pragma section(title_screen_sec,0)
 //#pragma region(title_screen_reg, x08c00, 0x8fe8,,,{title_screen_sec})
@@ -40,14 +40,24 @@ const char title_screen[] = {
 #pragma reference(title_screen)
 
 #pragma section(stored_spriteset_sec,0)
-#pragma region(stored_spriteset_reg, 0x15e8,0x1ae8,,,{stored_spriteset_sec})
+#pragma region(stored_spriteset_reg, 0x15e8,0x28e8,,,{stored_spriteset_sec})
 #pragma data(stored_spriteset_sec)
 const char stored_spriteset[] =  {
 	#embed spd_sprites SPRITE_FILE
 
 };
 
-#pragma region( main, 0x1e00, 0x7fff, , , {heap, stack, code, data, bss} )
+#pragma section(stored_charset_sec,0)
+//#pragma region(charset_reg,0x8000,0x8800,,,{charset_rec})
+#pragma region(stored_charset_reg,0x28e8,0x30e8,,,{stored_charset_sec})
+#pragma data(stored_charset_sec)
+const char stored_charset[] = {
+	#embed ctm_chars CHAR_FILE
+};
+#pragma reference(stored_charset)
+
+
+#pragma region( main, 0x30e8, 0x7fff, , , {heap, stack, code, data, bss} )
 
 
 #pragma section(charset_sec,0)
@@ -124,7 +134,8 @@ const char stored_spriteset[] =  {
 char *charset=(char *)0x8000;
 #pragma reference(charset)
 
-char *screen=(char *)0x8800;
+const int SCREEN_LOC=0x8800;
+char *screen=(char *)SCREEN_LOC;
 #pragma reference(screen)
 
 char *spriteset=(char *)0xa000;

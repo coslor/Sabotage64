@@ -33,10 +33,11 @@ const byte MAX_BULLET_CLOCK=20;
 byte bullet_clock;//=MAX_BULLET_CLOCK;
 bool is_firing;
 
-int score;
+long score;
 
 
 int main() {
+
 	//MUST BE THE FIRST INSTRUCTION
 	mmap_trampoline();
 	mmap_set(MMAP_NO_ROM);
@@ -70,7 +71,7 @@ int main() {
 				init_screen();
 				draw_barrel();
 				init_bullets();
-				score=0;
+				set_score(99990L);
 				trooper_clock=levels[current_level].max_trooper_clock;
 				barrel_dir=TO_FX96(3);
 				bullet_clock=MAX_BULLET_CLOCK;
@@ -267,7 +268,7 @@ inline int calc_screen_offset(int x, int y) {
 		return screen_loc;
 }
 
-//Stops, deactivates, hides trooper & leaves trooper char
+//Stops, deactivates, hides trooper and chute; leaves trooper char
 void land_trooper(char trooper_num, int screen_loc) {
 	stop_trooper(trooper_num);
 	screen[screen_loc]=TROOPER_CHAR;
@@ -276,8 +277,9 @@ void land_trooper(char trooper_num, int screen_loc) {
 	//trooper_clock=MAX_TROOPER_CLOCK;
 }
 
-//stops, deactivates, hides trooper; leaves smooshed char; deactivates & hides trooper, hides chute, plays explosion, incs score, resets trooper clock
+//stops, deactivates, and hides trooper and chute; leaves smooshed char; plays explosion, incs score, resets trooper clock
 void smoosh_trooper(char trooper_num, int screen_loc) {
+	//TODO it would be cool if we could count any troopers squished under their comerades' feet
 	stop_trooper(trooper_num);
 	//TODO animate smooshed trooper
 	screen[screen_loc]=SMOOSHED_CHAR;
@@ -286,12 +288,25 @@ void smoosh_trooper(char trooper_num, int screen_loc) {
 }
 
 #pragma optimize(0)
-//stops, deactivates, and hides trooper
+//stops, deactivates, and hides trooper and chute
 void stop_trooper(char trooper_num) {
 	troopers[trooper_num].speed_y=0;
 	troopers[trooper_num].active=false;
 	vspr_hide(troopers[trooper_num].vsprite_num);
 	vspr_hide(troopers[trooper_num].vsprite_num+MAX_TROOPERS);	//chute
+}
+
+//plays explosion, incs score, resets trooper clock
+void kill_trooper(byte trooper_num) {
+	//vspr_color(troopers[num].vsprite_num,VCOL_RED);
+	//troopers[trooper_num].active=false;
+	//vspr_hide(troopers[trooper_num].vsprite_num);
+	//vspr_hide(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
+	sidfx_play(1,SIDFXQuickExplosion,1);
+
+	inc_score(TROOPER_VALUE);
+
+	trooper_clock=levels[current_level].max_trooper_clock;
 }
 
 void add_troopers() {
@@ -462,6 +477,7 @@ void check_bullet_collisions() {
 			}
 			if (point_is_in_box(bullet->x,bullet->y,
 					trooper->x,trooper->y,trooper->end_x,trooper->end_y)) {
+				stop_trooper(tn);
 				kill_trooper(tn);
 				kill_bullet(bn);
 				continue;
@@ -477,18 +493,7 @@ void check_bullet_collisions() {
 }//check_bullet_collisions
 
 
-//deactivates & hides trooper, hides chute, plays explosion, incs score, resets trooper clock
-void kill_trooper(byte trooper_num) {
-	//vspr_color(troopers[num].vsprite_num,VCOL_RED);
-	troopers[trooper_num].active=false;
-	vspr_hide(troopers[trooper_num].vsprite_num);
-	vspr_hide(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
-	sidfx_play(1,SIDFXQuickExplosion,1);
 
-	score += 5;
-
-	trooper_clock=levels[current_level].max_trooper_clock;
-}
 
 void kill_bullet(byte bullet_num) {
 	bullets[bullet_num].active = false;
@@ -530,6 +535,8 @@ void initial_start() {
 	sidfx_init();
 	sid.fmodevol = 15;
 
+	//TODO get SID version of Reveille written
+	//init_sid();
 
 	// enable raster interrupt via direct path
 	rirq_init(false);
@@ -560,6 +567,9 @@ void run_game() {
 
 	sidfx_loop();
 
+	//TODO get SID version of Reveille written
+	//play_sid();
+
 	update_vsprites();
 
 }
@@ -575,4 +585,46 @@ void update_vsprites() {
 	// 4. sort raster IRQs
 	rirq_sort();
 
+}
+
+void init_sid() {
+	__asm {
+		jsr $0ff6
+	}
+}
+
+void play_sid() {
+	__asm {
+		jsr $1003
+	}
+}
+
+long set_score(long val) {
+	score = val;
+
+	update_onscreen_score();
+	return score;
+}
+
+long inc_score(long val) {
+	score += val;
+
+	//TODO RIght now, the score resets at 100000. Maybe do something else here when we exceed 5 score digits?
+	if (score > 99999) {
+		score = 0L;
+	}
+	update_onscreen_score();
+	return score;
+}
+
+void update_onscreen_score() {
+
+	//TODO maybe convert this to a more efficient form? I can't really be bothered
+	//		unless it ends up taking too many cycles
+	char	score_chars[5];
+	sprintf(score_chars,"%.5ld\n",score);
+	for (byte i=0;i<5;i++) {
+		//for each char of the score, convert PETSCII value to screen code & store onscreen
+		*((char *)SCREEN_POS+i)=score_chars[i]-p'0'+s'0';//SCREEN_CODE_0;
+	}
 }

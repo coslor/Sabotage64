@@ -13,6 +13,7 @@
 #include <c64/keyboard.h>
 #include <audio/sidfx.h>
 #include <string.h>
+#include <math.h>
 
 #define VSPRITES_MAX		22	//32
 #define NUM_IRQS			30	//40
@@ -67,6 +68,11 @@ const byte SMOOSHED_CHAR=153;
 //half-square used on screen to give the "SCORE" display a little more room
 const byte HALF_GROUND_SQUARE=0xf9;	
 
+const byte SCREEN_CODE_0=48;
+
+const byte TROOPER_VALUE=1;
+
+const char* SCREEN_POS=(char *)(SCREEN_LOC+992);
 
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
@@ -185,3 +191,10 @@ void initial_start();
 void run_game();
 
 void update_vsprites();
+
+void init_sid();
+void play_sid();
+
+long set_score(long val);
+long inc_score(long val);
+void update_onscreen_score();
