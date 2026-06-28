@@ -2,19 +2,19 @@
 
 
 
-// const char* hello_text = "HELLO, WORLD!";
-//char* screen = (char*) (0x8000);
-unsigned char* color = (unsigned char*) (0xd800);
+// const byte* hello_text = "HELLO, WORLD!";
+//byte* screen = (byte*) (0x8000);
+byte* color = (byte*) (0xd800);
 
 MOB troopers[MAX_TROOPERS];
-MOB bullets[NUM_BULLETS];
+MOB bullets[MAX_NUM_BULLETS];
 //fx_96 speed=0; //for debugger
 
 //const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock;
 
 //TODO Is this a compiler bug? If so, file it with DMW
-//const byte TROOPER_COLOR=VCOL_BROWN;
+//const byte TROOPER_COLOR=(byte)VCOL_BROWN;
 
 #define TROOPER_COLOR VCOL_DARK_GREY
 
@@ -40,6 +40,7 @@ int main() {
 
 	//MUST BE THE FIRST INSTRUCTION
 	mmap_trampoline();
+	//TODO why does changing this to MMAP_NO_BASIC cause a crash?
 	mmap_set(MMAP_NO_ROM);
 
 	//init_barrel();
@@ -64,20 +65,36 @@ int main() {
 				break;
 			}
 			case GS_STARTING_GAME: {
-				srand(1);	//make every game the same TODO: do I want every game the same?
+				srand(1);	//make every game the same 
+							//TODO: do I want every game the same?
 				//NOTE TO SELF: don't use srand(0) -- every rand() comes out as 0!
+
 				sidfx_play(1,SFXReveille,20);
 				clear_troopers();
 				init_screen();
 				draw_barrel();
 				init_bullets();
-				set_score(99990L);
+				set_score(0);
 				trooper_clock=levels[current_level].max_trooper_clock;
 				barrel_dir=TO_FX96(3);
 				bullet_clock=MAX_BULLET_CLOCK;
 				is_firing=false;
 				current_level = 0;
 
+				game_state = GS_START_LEVEL;
+				break;
+			}
+			case GS_START_LEVEL: {
+				center_message(levels[current_level].message,12);
+				char press_fire_msg[]=s"press fire or space to continue";
+				center_message(&press_fire_msg[0],13);
+				wait_for_fire();
+				erase_message(12);
+				erase_message(13);
+				//Wait for a little while before starting the next level
+				for (byte i=0;i<10;i++) {
+					rirq_wait();
+				}
 				game_state = GS_RUNNING;
 				break;
 			}
@@ -103,12 +120,11 @@ void init_screen() {
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
-
 }
 
 void init_bullets() {
 	#pragma unroll(full)
-	for (byte i=0;i<NUM_BULLETS;i++) {
+	for (byte i=0;i<MAX_NUM_BULLETS;i++) {
 		bullets[i].vsprite_num=VS_BULLET_OFFSET+i;
 		bullets[i].active=false;
 		vspr_hide(bullets[i].vsprite_num);
@@ -135,8 +151,9 @@ void fire_bullet(MOB* bullet, fx_96 x, fx_96 y, byte direction, fx_96 speed) {
 
 void move_bullets() {
 
-	#pragma unroll(full)
-	for (int i=0;i<NUM_BULLETS;i++) {
+	//#pragma unroll(full)
+	byte nb=levels[current_level].num_bullets;
+	for (int i=0;i<nb;i++) {
 		MOB* bullet = &bullets[i];
 		//__assume(bullet->type == BULLET);
 		if (! bullet->active) continue;
@@ -161,8 +178,9 @@ void move_bullets() {
 
 /** @return the index of the next inactive trooper, or 0xff if all troopers are active */
 byte find_inactive_bullet() {
-	#pragma unroll(full)
-	for (byte i=0;i<NUM_BULLETS;i++) {
+	//#pragma unroll(full)
+	byte nb=levels[current_level].num_bullets;
+	for (byte i=0;i<nb;i++) {
 		if (! bullets[i].active) {
 			return i;
 		}
@@ -236,7 +254,8 @@ void move_troopers() {
 				land_trooper(i,screen_loc);
 				continue;
 			}
-			else {	//check to see if there are already 3 troopers stacked up. If so, no more.
+			else {	//check to see if there are already 3 troopers stacked up. If so, no more. And no, you don't get
+					//	any points for the troopers smooshing *themselves*.
 				if ((y<920) && (screen[screen_loc+40] == TROOPER_CHAR)) {
 					if (((y<880) && ((screen[screen_loc+80]==TROOPER_CHAR) || (screen[screen_loc+80]==BUILDING_CHAR)))
 						&& ((y<840) && (screen[screen_loc+120]==TROOPER_CHAR) 
@@ -269,7 +288,7 @@ inline int calc_screen_offset(int x, int y) {
 }
 
 //Stops, deactivates, hides trooper and chute; leaves trooper char
-void land_trooper(char trooper_num, int screen_loc) {
+void land_trooper(byte trooper_num, int screen_loc) {
 	stop_trooper(trooper_num);
 	screen[screen_loc]=TROOPER_CHAR;
 	color[screen_loc]=TROOPER_COLOR;
@@ -278,7 +297,7 @@ void land_trooper(char trooper_num, int screen_loc) {
 }
 
 //stops, deactivates, and hides trooper and chute; leaves smooshed char; plays explosion, incs score, resets trooper clock
-void smoosh_trooper(char trooper_num, int screen_loc) {
+void smoosh_trooper(byte trooper_num, int screen_loc) {
 	//TODO it would be cool if we could count any troopers squished under their comerades' feet
 	stop_trooper(trooper_num);
 	//TODO animate smooshed trooper
@@ -289,7 +308,7 @@ void smoosh_trooper(char trooper_num, int screen_loc) {
 
 #pragma optimize(0)
 //stops, deactivates, and hides trooper and chute
-void stop_trooper(char trooper_num) {
+void stop_trooper(byte trooper_num) {
 	troopers[trooper_num].speed_y=0;
 	troopers[trooper_num].active=false;
 	vspr_hide(troopers[trooper_num].vsprite_num);
@@ -343,15 +362,6 @@ byte find_trooper(bool active) {
 /**
  * @param dir the direction of the barrel, from 32 to 0 (or 64)
  */
-// void draw_barrel(){
-// 	int bd=TO_INT(barrel_dir);
-// 	int spr_num=BARREL_SPRITE_OFFSET+bd;
-// 	//vspr_image(VS_BARREL_OFFSET,BARREL_SPRITE_OFFSET+TO_INT(barrel_dir));
-// 	//shouldn't have to make the full call every time, but sometimes it loses the x,y???
-// 	init_barrel();
-// }
-
-// void init_barrel() {
 void draw_barrel() {
 	int spr_num=BARREL_SPRITE_OFFSET+TO_INT(barrel_dir);
 	vspr_set(VS_BARREL_OFFSET,
@@ -419,8 +429,9 @@ void handle_inputs() {
 }
 
 void steer_bullets() {
-	#pragma unroll(full)
-	for (int i=0;i<NUM_BULLETS;i++) {
+	//#pragma unroll(full)
+	byte nb=levels[current_level].num_bullets;
+	for (byte i=0;i<nb;i++) {
 		if (! bullets[i].active) {
 			continue;
 		}
@@ -461,10 +472,12 @@ inline bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy
 	return (x >= bx && x <=b_endx && y>=by && y<=b_endy);
 }
 
-//#pragma optimize(0)
 void check_bullet_collisions() {
-	#pragma unroll(full)
-	for (int bn=0;bn<NUM_BULLETS;bn++) {
+	//yes, this is a crummy algorithm(0n^2), but for the small number of bullets/troopers
+	//	it should be fine.
+	
+	byte nb=levels[current_level].num_bullets;
+	for (byte bn=0;bn<nb;bn++) {
 		MOB *bullet = &bullets[bn];
 		if (! bullet->active) {
 			continue;
@@ -529,8 +542,11 @@ void initial_start() {
 	// with our joystick interrupt
 	cia_init();
 
+	//Change screen & charset addresses
 	vic_setmode(VICM_TEXT,screen,charset);
-
+	//TODO does this buy us anything if the ROMs are turned off?
+	//Tell the Kernal where to find the text screen.
+	*HIBASE=(byte)((int)(&screen)/256);
 
 	sidfx_init();
 	sid.fmodevol = 15;
@@ -542,7 +558,7 @@ void initial_start() {
 	rirq_init(false);
 
 	// initialize sprite multiplexer
-	vspr_init((char*)screen);
+	vspr_init(screen);
 
 	vspr_sort();
 	vspr_update();
@@ -609,7 +625,7 @@ long set_score(long val) {
 long inc_score(long val) {
 	score += val;
 
-	//TODO RIght now, the score resets at 100000. Maybe do something else here when we exceed 5 score digits?
+	//TODO Right now, the score resets at 100000. Maybe do something else here when we exceed 5 score digits?
 	if (score > 99999) {
 		score = 0L;
 	}
@@ -627,4 +643,37 @@ void update_onscreen_score() {
 		//for each char of the score, convert PETSCII value to screen code & store onscreen
 		*((char *)SCREEN_POS+i)=score_chars[i]-p'0'+s'0';//SCREEN_CODE_0;
 	}
+}
+
+void center_message(const char* message, byte row) {
+	byte len=strlen(message);
+	byte num_spcs=(40-len)/2;
+		// mmap_set(MMAP_ROM);
+
+	for (byte b=0;b<len;b++) {
+		screen[row*40+num_spcs+b]=message[b];		
+	}
+	// gotoxy(num_spcs,row);
+	// printf("%s",message);
+
+		// mmap_set(MMAP_NO_ROM);
+
+}
+
+void erase_message(byte row) {
+	const char empty_msg[]="                                       ";
+	center_message(&empty_msg[0], row);
+}
+
+//TODO SERIOUSLY, WTF??
+void wait_for_fire() { 
+	while (true) {
+		joy_poll(0);
+		keyb_poll();	
+
+		if (key_pressed(KSCAN_SPACE) || joyb[0]>0) {
+			break;
+		}
+	}
+
 }

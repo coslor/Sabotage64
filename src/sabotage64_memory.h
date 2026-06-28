@@ -1,5 +1,5 @@
 #define SPRITE_FILE 		"resources/sabotage64-0.3.7.spd"
-#define PLAY_SCREEN_FILE 	"resources/sabotage64 text 0.5.bin"
+#define PLAY_SCREEN_FILE 	"resources/sabotage64 text 0.7.bin"
 #define CHAR_FILE			"resources/Sabotage64 (ROM charset) 0.4.ctm"
 
 //#pragma region( lower, 0xa00, 0x0fff, , , {code} )

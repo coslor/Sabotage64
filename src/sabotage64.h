@@ -20,7 +20,7 @@
 
 #define MAX_TROOPERS 		8
 #define NUM_CHUTES			MAX_TROOPERS
-#define NUM_BULLETS 		4
+#define MAX_NUM_BULLETS 	4
 //actual bullet speed is this value /64
 #define BULLET_SPEED		120
 
@@ -55,8 +55,9 @@
 //Can you steer the shells after they've been shot?
 //#define STEERABLE_BULLETS
 
-#define TROOPER_CHUTE_SPEED	16
-#define TROOPER_NO_CHUTE_SPEED 32
+//speed is fractional, as in n/64
+#define TROOPER_CHUTE_SPEED	20
+#define TROOPER_NO_CHUTE_SPEED 36
 
 
 /*** Screen codes  ***/
@@ -72,7 +73,10 @@ const byte SCREEN_CODE_0=48;
 
 const byte TROOPER_VALUE=1;
 
-const char* SCREEN_POS=(char *)(SCREEN_LOC+992);
+const byte* SCREEN_POS=(byte *)(SCREEN_LOC+992);
+
+/** HIBASE points to the current text screen for the Kernal. High byte only. */
+byte *HIBASE=(byte *)648;
 
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
@@ -96,7 +100,7 @@ typedef enum MOBType{
 } MobType;
 
 typedef enum {
-	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_RUNNING, GS_STOPPING, GS_ENDING
+	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_START_LEVEL, GS_RUNNING, GS_STOPPING, GS_ENDING
 } GameState;
 GameState game_state=GS_INITIAL_START;
 
@@ -108,12 +112,16 @@ typedef struct Level {
 	byte 	max_troopers;
 	//how closely the troopers are clustered together; higher #s mean further apart
 	byte 	max_trooper_clock;
+	byte 	num_bullets;
+	char	message[32];
 } Level;
 
 Level levels[] = {
 	{
 		4,
-		90
+		90,
+		4,
+		s"this is the first level"
 	}
 };
 byte current_level;
@@ -198,3 +206,8 @@ void play_sid();
 long set_score(long val);
 long inc_score(long val);
 void update_onscreen_score();
+
+/**Prints & centers a given message. Message should be in screen codes. */
+void center_message(const char *message, byte row);
+void wait_for_fire();
+void erase_message(byte row);
