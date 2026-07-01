@@ -9,7 +9,8 @@
     "definitions": [],
     "includes": [],
     "args": [
-
+        "-gp",
+        "-xz",
         "-DVSPRITES_MAX=22",
         "-DNUM_IRQS=40"
     ],

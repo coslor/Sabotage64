@@ -114,6 +114,7 @@ typedef struct Level {
 	byte 	max_trooper_clock;
 	byte 	num_bullets;
 	char	message[32];
+	byte	barrel_color;
 } Level;
 
 Level levels[] = {
@@ -121,7 +122,8 @@ Level levels[] = {
 		4,
 		90,
 		4,
-		s"this is the first level"
+		s"this is the first level",
+		VCOL_DARK_GREY
 	}
 };
 byte current_level;
@@ -161,7 +163,7 @@ typedef struct MOB {
 
 /****Method Signatures****/
 
-void init_screen();
+void show_game_screen();
 
 void clear_troopers();
 void drop_trooper(byte trooper_num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y);

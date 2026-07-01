@@ -43,15 +43,6 @@ int main() {
 	//TODO why does changing this to MMAP_NO_BASIC cause a crash?
 	mmap_set(MMAP_NO_ROM);
 
-	//init_barrel();
-
-	//clock_t time = clock();
-
-
-	int frame_num=0;
-
-
-
 	while (game_state!=GS_ENDING) {
 
 		switch (game_state) {
@@ -71,7 +62,7 @@ int main() {
 
 				sidfx_play(1,SFXReveille,20);
 				clear_troopers();
-				init_screen();
+				show_game_screen();
 				draw_barrel();
 				init_bullets();
 				set_score(0);
@@ -112,16 +103,23 @@ int main() {
     return 0;
 }
 
-void init_screen() {
+void show_game_screen() {
 	memcpy(screen,title_screen,1000);
 	memcpy(charset, stored_charset, 0x800);
-	memcpy(spriteset, stored_spriteset, 1280);
+
+	//NOTE: spriteset copy moved to initial_start()
+	//memcpy(spriteset, stored_spriteset, 1280);
+	
 	memset(color,1,1000);
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
 }
 
+
+void show_title_screen() {
+	
+}
 void init_bullets() {
 	#pragma unroll(full)
 	for (byte i=0;i<MAX_NUM_BULLETS;i++) {
@@ -368,8 +366,9 @@ void draw_barrel() {
 			BARREL_X,
 			BARREL_Y,
 			spr_num,
-			//60,
-			BARREL_COLOR);	
+			//BARREL_COLOR);	
+			levels[current_level].barrel_color
+	);
 }
 
 void handle_inputs() {
@@ -566,6 +565,8 @@ void initial_start() {
 
 	rirq_start();
 
+	//copy custom charset to VIC memory
+	memcpy(spriteset, stored_spriteset, 1280);
 
 }
 
