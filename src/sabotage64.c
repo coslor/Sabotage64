@@ -13,6 +13,8 @@ MOB bullets[MAX_NUM_BULLETS];
 //const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock;
 
+byte troopers_left;
+
 //TODO Is this a compiler bug? If so, file it with DMW
 //const byte TROOPER_COLOR=(byte)VCOL_BROWN;
 
@@ -65,7 +67,6 @@ int main() {
 				//NOTE TO SELF: don't use srand(0) -- every rand() comes out as 0!
 
 				sidfx_play(1,SFXReveille,20);
-				clear_troopers();
 				show_game_screen();
 				draw_barrel();
 				init_bullets();
@@ -80,16 +81,29 @@ int main() {
 				break;
 			}
 			case GS_START_LEVEL: {
+				clear_troopers();	//get rid of any left over troopers in the sky
+				update_vsprites();//show the trooper change
+
+				show_game_screen();//erase troopers on the ground
+
+				trooper_clock=levels[current_level].max_trooper_clock;
+				barrel_dir=TO_FX96(3);
+				draw_barrel();
+
+				bullet_clock=MAX_BULLET_CLOCK;
+				is_firing=false;
+
 				center_message(levels[current_level].message,12);
 				char press_fire_msg[]=s"press fire or space to continue";
 				center_message(&press_fire_msg[0],13);
 				wait_for_fire();
 				erase_message(12);
 				erase_message(13);
-				//Wait for a little while before starting the next level
-				for (byte i=0;i<10;i++) {
-					rirq_wait();
-				}
+				// //Wait for a little while before starting the next level
+				// for (byte i=0;i<10;i++) {
+				// 	rirq_wait();
+				// }
+				troopers_left = levels[current_level].num_troopers;
 				game_state = GS_RUNNING;
 				break;
 			}
@@ -282,7 +296,7 @@ void move_troopers() {
 					}//else land trooper
 				}//else if y<880
 			}//else if y<920
-		}//else if c==GROUND_CHAR
+		}//else if chute
 
 		vspr_movey(troopers[i].vsprite_num,y-7);
 		if (troopers[i].has_chute) {
@@ -438,7 +452,7 @@ void handle_inputs() {
 
 	//for debugging
 	if (key_pressed(KSCAN_STOP)) {
-		game_state = GS_STARTING_GAME;
+		game_state = GS_START_LEVEL;
 	}
 }
 
@@ -692,4 +706,15 @@ void wait_for_fire() {
 			break;
 		}
 	}
+}
+
+//end_row, end_col are inclusive
+byte count_dead_troopers(byte start_row, byte start_col, byte end_row, byte end_col) {
+	byte troopers_found=0;
+	for (byte r=start_row;r<=end_row;r++) {
+		for (byte c=start_col;c<=end_col;c++) {
+			troopers_found += (*(screen+r*40+c) == TROOPER_CHAR);
+		}
+	}
+	return troopers_found;
 }

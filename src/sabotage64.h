@@ -112,6 +112,8 @@ typedef struct Level {
 	byte 	max_troopers;
 	//how closely the troopers are clustered together; higher #s mean further apart
 	byte 	max_trooper_clock;
+	//how many troopers should we drop on this level?
+	byte	num_troopers;
 	byte 	num_bullets;
 	char	message[32];
 	byte	barrel_color;
@@ -121,6 +123,7 @@ Level levels[] = {
 	{
 		4,
 		90,
+		20,
 		4,
 		s"this is the first level",
 		VCOL_DARK_GREY
@@ -215,3 +218,4 @@ void wait_for_fire();
 void erase_message(byte row);
 
 void show_title_screen();
+byte count_dead_troopers(byte start_row, byte start_col, byte end_row, byte end_col);
