@@ -12,7 +12,8 @@
         "-gp",
         "-xz",
         "-DVSPRITES_MAX=22",
-        "-DNUM_IRQS=40"
+        "-DNUM_IRQS=40",
+        "-Ddv"
     ],
     "compiler": ""
 }
