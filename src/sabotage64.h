@@ -213,3 +213,5 @@ void update_onscreen_score();
 void center_message(const char *message, byte row);
 void wait_for_fire();
 void erase_message(byte row);
+
+void show_title_screen();

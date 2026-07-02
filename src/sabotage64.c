@@ -48,6 +48,10 @@ int main() {
 		switch (game_state) {
 			case GS_INITIAL_START: {
 				initial_start();
+
+				show_title_screen();
+				wait_for_fire();
+
 				game_state = GS_WELCOME;
 				break;
 			}
@@ -104,12 +108,12 @@ int main() {
 }
 
 void show_game_screen() {
-	memcpy(screen,title_screen,1000);
+	memcpy(screen, game_screen,1000);
 	memcpy(charset, stored_charset, 0x800);
-
+	
 	//NOTE: spriteset copy moved to initial_start()
 	//memcpy(spriteset, stored_spriteset, 1280);
-	
+
 	memset(color,1,1000);
 
 	vic.color_border=VCOL_BLACK;
@@ -118,8 +122,19 @@ void show_game_screen() {
 
 
 void show_title_screen() {
-	
+	memcpy(screen,title_text_screen,1000);
+	memcpy(charset, stored_charset, 0x800);
+
+	//NOTE: spriteset copy moved to initial_start()
+	//memcpy(spriteset, stored_spriteset, 1280);
+
+//	memset(color,1,1000);
+	memcpy(color,title_color_screen, 1000);
+
+	vic.color_border=VCOL_BLACK;
+	vic.color_back=VCOL_WHITE;
 }
+
 void init_bullets() {
 	#pragma unroll(full)
 	for (byte i=0;i<MAX_NUM_BULLETS;i++) {
@@ -636,8 +651,7 @@ long inc_score(long val) {
 
 void update_onscreen_score() {
 
-	//TODO maybe convert this to a more efficient form? I can't really be bothered
-	//		unless it ends up taking too many cycles
+	//TODO convert this to use itoa()?
 	char	score_chars[5];
 	sprintf(score_chars,"%.5ld\n",score);
 	for (byte i=0;i<5;i++) {
@@ -649,32 +663,33 @@ void update_onscreen_score() {
 void center_message(const char* message, byte row) {
 	byte len=strlen(message);
 	byte num_spcs=(40-len)/2;
-		// mmap_set(MMAP_ROM);
 
 	for (byte b=0;b<len;b++) {
 		screen[row*40+num_spcs+b]=message[b];		
 	}
-	// gotoxy(num_spcs,row);
-	// printf("%s",message);
-
-		// mmap_set(MMAP_NO_ROM);
-
 }
 
 void erase_message(byte row) {
-	const char empty_msg[]="                                       ";
+	//39 space chars
+	const char empty_msg[]=s"                                       ";
 	center_message(&empty_msg[0], row);
 }
 
-//TODO SERIOUSLY, WTF??
+//Waits for either the joystick button or the spacebar to be pressed, then released
 void wait_for_fire() { 
 	while (true) {
 		joy_poll(0);
 		keyb_poll();	
-
 		if (key_pressed(KSCAN_SPACE) || joyb[0]>0) {
 			break;
 		}
 	}
-
+	//now debounce
+	while (true) {
+		joy_poll(0);
+		keyb_poll();	
+		if (!key_pressed(KSCAN_SPACE) && !joyb[0]>0) {
+			break;
+		}
+	}
 }
