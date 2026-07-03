@@ -15,52 +15,85 @@
 #include <string.h>
 #include <math.h>
 
+//These have to be DEFINES (I think?)
 #define VSPRITES_MAX		22	//32
 #define NUM_IRQS			30	//40
 
-#define MAX_TROOPERS 		8
-#define MAX_CHUTES			MAX_TROOPERS
-#define MAX_BULLETS 	4
+/****Fixed Point 9.6 Stuff ****/
+typedef signed int fx_96;
+
+#define TO_INT(n) (int)(n>>6)
+#define TO_FX96(n) (fx_96)(n<<6)
+
+
+// #define MAX_TROOPERS 		8
+// #define MAX_CHUTES			MAX_TROOPERS
+// #define MAX_BULLETS 	4
+// //actual bullet speed is this value /64
+// #define BULLET_SPEED		120
+
+const byte MAX_TROOPERS			=8;
+const byte MAX_CHUTES			=MAX_TROOPERS;
+const byte MAX_BULLETS			=4;
 //actual bullet speed is this value /64
-#define BULLET_SPEED		120
+const byte BULLET_SPEED			=120;
 
 //If defined, all shots automatically hit
 //#define PERFECT_SHOT
 
-#define SPRITE_OFFSET		0x80
-#define CHUTE_SPRITE		SPRITE_OFFSET+0
-#define TROOPER_SPRITE		SPRITE_OFFSET+1
-#define BULLET_SPRITE		SPRITE_OFFSET+18
-#define BARREL_SPRITE_OFFSET SPRITE_OFFSET+9
+// #define SPRITE_OFFSET		0x80
+// #define CHUTE_SPRITE		SPRITE_OFFSET+0
+// #define TROOPER_SPRITE		SPRITE_OFFSET+1
+// #define BULLET_SPRITE		SPRITE_OFFSET+18
+// #define BARREL_SPRITE_OFFSET SPRITE_OFFSET+9
+
+const byte SPRITE_OFFSET		=0x80;
+const byte CHUTE_SPRITE			=SPRITE_OFFSET+0;
+const byte TROOPER_SPRITE		=SPRITE_OFFSET+1;
+const byte BARREL_SPRITE_OFFSET	=SPRITE_OFFSET+9;
+const byte BULLET_SPRITE		=SPRITE_OFFSET+18;
 
 /** VSprite # offsets. VSprites are stored as:
 *	RTT..TCC..CBB..B
 *	...where T are troopers, C are chutes, B are bullets, and R is the barrel
 **/
 
-//#define VS_TROOPER_OFFSET	VS_CHUTE_OFFSET + MAX_CHUTES
-#define VS_TROOPER_OFFSET	1
-//#define VS_CHUTE_OFFSET		1
-#define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + MAX_TROOPERS
-//#define VS_BULLET_OFFSET	VS_TROOPER_OFFSET + MAX_TROOPERS
-#define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + MAX_CHUTES
-#define VS_BARREL_OFFSET	0
+// #define VS_TROOPER_OFFSET	1
+// #define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + MAX_TROOPERS
+// #define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + MAX_CHUTES
+// #define VS_BARREL_OFFSET	0
 
-#define BULLET_COLOR		VCOL_WHITE
-#define TROOPER_COLOR		VCOL_DARK_GREY
-#define BARREL_COLOR		VCOL_LT_GREY
-#define CHUTE_COLOR			VCOL_WHITE
+const byte VS_TROOPER_OFFSET	=1;
+const byte VS_CHUTE_OFFSET		=VS_TROOPER_OFFSET + MAX_TROOPERS;
+const byte VS_BULLET_OFFSET		=VS_CHUTE_OFFSET + MAX_CHUTES;
+const byte VS_BARREL_OFFSET		=0;
 
-#define BARREL_X			176
-#define BARREL_Y			189
+//#define BULLET_COLOR		VCOL_WHITE
+// #define TROOPER_COLOR		VCOL_DARK_GREY
+// #define BARREL_COLOR		VCOL_LT_GREY
+// #define CHUTE_COLOR			VCOL_WHITE
+
+const enum VICColors BULLET_COLOR=VCOL_WHITE;
+const enum VICColors TROOPER_COLOR=VCOL_DARK_GREY;
+const enum VICColors CHUTE_COLOR=VCOL_WHITE;
+
+//#define BARREL_X			176
+//#define BARREL_Y			189
+
+const byte BARREL_X			=176;
+const byte BARREL_Y			=189;
+
 
 //Can you steer the shells after they've been shot?
 //#define STEERABLE_BULLETS
 
-//speed is fractional, as in n/64
-#define TROOPER_CHUTE_SPEED	20
-#define TROOPER_NO_CHUTE_SPEED 36
+// //speed is fractional, as in n/64
+// #define TROOPER_CHUTE_SPEED	20
+// #define TROOPER_NO_CHUTE_SPEED 36
 
+//speed is fractional, as in n/64
+const fx_96 TROOPER_CHUTE_SPEED=20;
+const fx_96 TROOPER_NO_CHUTE_SPEED=36;
 
 /*** Screen codes  ***/
 const byte TROOPER_CHAR	=152;
@@ -134,11 +167,6 @@ Level levels[] = {
 byte current_level;
 
 
-/****Fixed Point 9.6 Stuff ****/
-typedef signed int fx_96;
-
-#define TO_INT(n) (int)(n>>6)
-#define TO_FX96(n) (fx_96)(n<<6)
 
 /**** MOB Stuff  ****/
 
