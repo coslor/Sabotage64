@@ -7,7 +7,7 @@
 byte* color = (byte*) (0xd800);
 
 MOB troopers[MAX_TROOPERS];
-MOB bullets[MAX_NUM_BULLETS];
+MOB bullets[MAX_BULLETS];
 //fx_96 speed=0; //for debugger
 
 //const byte MAX_TROOPER_CLOCK=90;
@@ -18,7 +18,7 @@ byte troopers_left;
 //TODO Is this a compiler bug? If so, file it with DMW
 //const byte TROOPER_COLOR=(byte)VCOL_BROWN;
 
-#define TROOPER_COLOR VCOL_DARK_GREY
+//#define TROOPER_COLOR VCOL_WHITE
 
 /**
  * Angles look like:
@@ -151,7 +151,7 @@ void show_title_screen() {
 
 void init_bullets() {
 	#pragma unroll(full)
-	for (byte i=0;i<MAX_NUM_BULLETS;i++) {
+	for (byte i=0;i<MAX_BULLETS;i++) {
 		bullets[i].vsprite_num=VS_BULLET_OFFSET+i;
 		bullets[i].active=false;
 		vspr_hide(bullets[i].vsprite_num);

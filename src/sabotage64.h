@@ -19,8 +19,8 @@
 #define NUM_IRQS			30	//40
 
 #define MAX_TROOPERS 		8
-#define NUM_CHUTES			MAX_TROOPERS
-#define MAX_NUM_BULLETS 	4
+#define MAX_CHUTES			MAX_TROOPERS
+#define MAX_BULLETS 	4
 //actual bullet speed is this value /64
 #define BULLET_SPEED		120
 
@@ -38,14 +38,16 @@
 *	...where T are troopers, C are chutes, B are bullets, and R is the barrel
 **/
 
+//#define VS_TROOPER_OFFSET	VS_CHUTE_OFFSET + MAX_CHUTES
 #define VS_TROOPER_OFFSET	1
+//#define VS_CHUTE_OFFSET		1
 #define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + MAX_TROOPERS
-#define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + NUM_CHUTES
+//#define VS_BULLET_OFFSET	VS_TROOPER_OFFSET + MAX_TROOPERS
+#define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + MAX_CHUTES
 #define VS_BARREL_OFFSET	0
 
-
 #define BULLET_COLOR		VCOL_WHITE
-#define TROOPER_COLOR		VCOL_GREEN
+#define TROOPER_COLOR		VCOL_DARK_GREY
 #define BARREL_COLOR		VCOL_LT_GREY
 #define CHUTE_COLOR			VCOL_WHITE
 
