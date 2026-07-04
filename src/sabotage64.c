@@ -37,6 +37,7 @@ bool is_firing;
 
 long score;
 
+byte remaining_troopers;
 
 int main() {
 
@@ -68,11 +69,13 @@ int main() {
 
 				sidfx_play(1,SFXReveille,20);
 				show_game_screen();
+
+				barrel_dir=TO_FX96(3);
 				draw_barrel();
+
 				init_bullets();
 				set_score(0);
 				trooper_clock=levels[current_level].max_trooper_clock;
-				barrel_dir=TO_FX96(3);
 				bullet_clock=MAX_BULLET_CLOCK;
 				is_firing=false;
 				current_level = 0;
@@ -81,25 +84,26 @@ int main() {
 				break;
 			}
 			case GS_START_LEVEL: {
+				init_bullets();
 				clear_troopers();	//get rid of any left over troopers in the sky
+
+				if (levels[current_level].clear_before_starting) {
+					show_game_screen();//erase troopers on the ground
+				}
+				remaining_troopers = levels[current_level].num_troopers;
 				update_vsprites();//show the trooper change
 
-				show_game_screen();//erase troopers on the ground
 
 				trooper_clock=levels[current_level].max_trooper_clock;
-				barrel_dir=TO_FX96(3);
 				draw_barrel();
 
 				bullet_clock=MAX_BULLET_CLOCK;
 				is_firing=false;
 
-				center_message(levels[current_level].message,12);
-				char press_fire_msg[]=s"press fire or space to continue";
-				center_message(&press_fire_msg[0],13);
-				wait_for_fire();
-				erase_message(12);
-				erase_message(13);
-				// //Wait for a little while before starting the next level
+				if (levels[current_level].pause_for_msg) {
+					show_messages(levels[current_level].message[0], levels[current_level].message[1]);
+				}
+				//Wait for a little while before starting the next level
 				// for (byte i=0;i<10;i++) {
 				// 	rirq_wait();
 				// }
@@ -109,6 +113,21 @@ int main() {
 			}
 			case GS_RUNNING: {
 				run_game();				
+				break;
+			}
+			//We've dropped all of our troopers, now we wait until they've all landed
+			case GS_LEVEL_ENDING: {
+				run_game();
+				byte active_trooper_num=find_trooper(true);
+				if (active_trooper_num==0xff) {	//no active troopers left
+					//Wait for a second or so before starting next level
+					for (byte i=0;i<80;i++) {
+						sidfx_loop();
+						update_vsprites();
+					}
+					current_level=levels[current_level].next_level_num;
+					game_state=GS_START_LEVEL;
+				}
 				break;
 			}
 			case GS_STOPPING:{
@@ -121,6 +140,17 @@ int main() {
     return 0;
 }
 
+//#pragma optimize(0)
+void show_messages(const char const *msg1, const char* msg2) {
+	center_message(msg1,10);
+	center_message(msg2,11);
+	center_message(PRESS_FIRE_MSG,13);
+	wait_for_fire();
+	erase_message(10);
+	erase_message(11);
+	erase_message(13);
+}
+
 void show_game_screen() {
 	memcpy(screen, game_screen,1000);
 	memcpy(charset, stored_charset, 0x800);
@@ -128,7 +158,8 @@ void show_game_screen() {
 	//NOTE: spriteset copy moved to initial_start()
 	//memcpy(spriteset, stored_spriteset, 1280);
 
-	memset(color,1,1000);
+	//memset(color,1,1000);
+	memcpy(color,game_screen_color,1000);
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
@@ -203,7 +234,7 @@ void move_bullets() {
 
 }
 
-/** @return the index of the next inactive trooper, or 0xff if all troopers are active */
+/** @return the index of the next inactive bullet, or 0xff if all bullets are active */
 byte find_inactive_bullet() {
 	//#pragma unroll(full)
 	byte nb=levels[current_level].num_bullets;
@@ -333,7 +364,6 @@ void smoosh_trooper(byte trooper_num, int screen_loc) {
 	kill_trooper(trooper_num);
 }
 
-#pragma optimize(0)
 //stops, deactivates, and hides trooper and chute
 void stop_trooper(byte trooper_num) {
 	troopers[trooper_num].speed_y=0;
@@ -362,6 +392,9 @@ void add_troopers() {
 		if (tnum==0xff) {
 			return;	//no troopers available
 		}
+
+		remaining_troopers--;
+		//pick a semi-random scteen column
 		byte r=0;
 		do {
 			r=rand() % 37 + 1;
@@ -604,7 +637,13 @@ void run_game() {
 
 	check_bullet_collisions();
 
-	add_troopers();
+	if (remaining_troopers>0) {
+		add_troopers();
+	}
+	else {
+		game_state=GS_LEVEL_ENDING;
+	}
+
 	move_troopers();
 
 	draw_barrel();
@@ -674,19 +713,28 @@ void update_onscreen_score() {
 	}
 }
 
-void center_message(const char* message, byte row) {
+//#pragma optimize(0)
+void center_message(const char const *message, byte row) {
+	if (message == NULL) {
+		return;
+	}
 	byte len=strlen(message);
+	if (len==0) {
+		return;
+	}
 	byte num_spcs=(40-len)/2;
+
 
 	for (byte b=0;b<len;b++) {
 		screen[row*40+num_spcs+b]=message[b];		
 	}
 }
 
+//#pragma optimize(0)
 void erase_message(byte row) {
 	//39 space chars
 	const char empty_msg[]=s"                                       ";
-	center_message(&empty_msg[0], row);
+	center_message(empty_msg, row);
 }
 
 //Waits for either the joystick button or the spacebar to be pressed, then released

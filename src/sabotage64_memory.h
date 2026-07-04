@@ -65,14 +65,14 @@ const char stored_charset[] = {
 #pragma section(screen_sec, 0)
 #pragma region(screen_reg,0x8800,0x8c00,,,{screen_sec})
 
-#pragma region(middle, 0x8c00, 0xa000,,,{stack,code, data, bss})
+#pragma region(middle, 0x8c00, 0xa000,,,{code, data, bss})
 
 //NOTE:we can't put our sprites at $8c00, since they go on to like $9100,
 //	and in this memory config the default character set gets mapped to $9000
 #pragma section(spriteset_sec, 0)
 #pragma region(spriteset_reg, 0xa000, 0xa500,,, {spriteset_sec} )
 
-#pragma region( upper, 0xa500, 0xcfff, , , {heap, code, data, bss} )
+#pragma region( upper, 0xa500, 0xcfff, , , {stack,heap, code, data, bss} )
 
 
 // #pragma section(color_sec, 0)

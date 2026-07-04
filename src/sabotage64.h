@@ -25,27 +25,14 @@ typedef signed int fx_96;
 #define TO_INT(n) (int)(n>>6)
 #define TO_FX96(n) (fx_96)(n<<6)
 
-
-// #define MAX_TROOPERS 		8
-// #define MAX_CHUTES			MAX_TROOPERS
-// #define MAX_BULLETS 	4
-// //actual bullet speed is this value /64
-// #define BULLET_SPEED		120
-
 const byte MAX_TROOPERS			=8;
 const byte MAX_CHUTES			=MAX_TROOPERS;
 const byte MAX_BULLETS			=4;
 //actual bullet speed is this value /64
-const byte BULLET_SPEED			=120;
+const fx_96 BULLET_SPEED		=120;
 
 //If defined, all shots automatically hit
 //#define PERFECT_SHOT
-
-// #define SPRITE_OFFSET		0x80
-// #define CHUTE_SPRITE		SPRITE_OFFSET+0
-// #define TROOPER_SPRITE		SPRITE_OFFSET+1
-// #define BULLET_SPRITE		SPRITE_OFFSET+18
-// #define BARREL_SPRITE_OFFSET SPRITE_OFFSET+9
 
 const byte SPRITE_OFFSET		=0x80;
 const byte CHUTE_SPRITE			=SPRITE_OFFSET+0;
@@ -58,38 +45,20 @@ const byte BULLET_SPRITE		=SPRITE_OFFSET+18;
 *	...where T are troopers, C are chutes, B are bullets, and R is the barrel
 **/
 
-// #define VS_TROOPER_OFFSET	1
-// #define VS_CHUTE_OFFSET		VS_TROOPER_OFFSET + MAX_TROOPERS
-// #define VS_BULLET_OFFSET	VS_CHUTE_OFFSET + MAX_CHUTES
-// #define VS_BARREL_OFFSET	0
-
 const byte VS_TROOPER_OFFSET	=1;
 const byte VS_CHUTE_OFFSET		=VS_TROOPER_OFFSET + MAX_TROOPERS;
 const byte VS_BULLET_OFFSET		=VS_CHUTE_OFFSET + MAX_CHUTES;
 const byte VS_BARREL_OFFSET		=0;
 
-//#define BULLET_COLOR		VCOL_WHITE
-// #define TROOPER_COLOR		VCOL_DARK_GREY
-// #define BARREL_COLOR		VCOL_LT_GREY
-// #define CHUTE_COLOR			VCOL_WHITE
-
 const enum VICColors BULLET_COLOR=VCOL_WHITE;
 const enum VICColors TROOPER_COLOR=VCOL_DARK_GREY;
 const enum VICColors CHUTE_COLOR=VCOL_WHITE;
 
-//#define BARREL_X			176
-//#define BARREL_Y			189
-
 const byte BARREL_X			=176;
 const byte BARREL_Y			=189;
 
-
 //Can you steer the shells after they've been shot?
 //#define STEERABLE_BULLETS
-
-// //speed is fractional, as in n/64
-// #define TROOPER_CHUTE_SPEED	20
-// #define TROOPER_NO_CHUTE_SPEED 36
 
 //speed is fractional, as in n/64
 const fx_96 TROOPER_CHUTE_SPEED=20;
@@ -135,7 +104,8 @@ typedef enum MOBType{
 } MobType;
 
 typedef enum {
-	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_START_LEVEL, GS_RUNNING, GS_STOPPING, GS_ENDING
+	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_START_LEVEL, GS_RUNNING, 
+	GS_LEVEL_ENDING, GS_STOPPING, GS_ENDING
 } GameState;
 GameState game_state=GS_INITIAL_START;
 
@@ -144,24 +114,101 @@ GameState game_state=GS_INITIAL_START;
 #define NUM_LEVELS			1
 typedef struct Level {
 	//max # of troopers onscreen at once
-	byte 	max_troopers;
-	//how closely the troopers are clustered together; higher #s mean further apart
-	byte 	max_trooper_clock;
-	//how many troopers should we drop on this level?
-	byte	num_troopers;
-	byte 	num_bullets;
-	char	message[32];
-	byte	barrel_color;
+	const byte 	max_troopers;
+	//how closely the troopers are clustered together; higher #s mean further apart. Stay at >=50.
+	const byte 	max_trooper_clock;
+	//how many troopers total should we drop on this level?
+	const byte	num_troopers;
+	const byte 	num_bullets;
+	//NOTE: if you exceed the max length for a message, bad things happen!
+	const char	message[2][39];
+	const bool	pause_for_msg;
+	const byte	barrel_color;
+	const bool	clear_before_starting;
+	const byte 	next_level_num;
 } Level;
-
+//0123456789012345678901234567890123456789
+//there is no victory, only honor.
+//valhalla awaits!
 Level levels[] = {
+	{									//#0
+		4,								//max_troopers
+		90,								//max_trooper_clock
+		4,								//num_troopers
+		4,								//num_bullets
+		{
+		   //0123456789012345678901234567890123456789
+			s"we can't let the enemy overtake this",	//message
+			s"position. it's up to you, soldier!"	//message 2
+		},
+		true,							//pause for message?
+		VCOL_DARK_GREY,					//barrel color
+		true,							//clear all troopers bfore starting?
+		2								//next level #
+	},
+
+	{									//#1
+		6,								//max_troopers
+		70,								//max_trooper_clock
+		8,								//num_troopers
+		3,								//num_bullets
+		{
+		   //0123456789012345678901234567890123456789
+			s"your gun is getting warm, so your shot",		//message
+			s"rate will be reduced. be careful!"
+		},
+		true,
+		VCOL_LT_GREY,
+		true,
+		2
+	},
+	{									//#2
+		7,								//max_troopers
+		70,								//max_trooper_clock
+		12,								//num_troopers
+		2,								//num_bullets
+		{
+		   //0123456789012345678901234567890123456789
+			s"the action's getting really hot, as is",		//message
+			s"your gun. watch yourself!"
+		},
+		true,
+		VCOL_RED,
+		true,
+		3
+	},
+
 	{
+										//#3
+		8,
+		50,
+		16,
+		1,
+		{
+		   //0123456789012345678901234567890123456789
+			s"hold out as long as you can-your brave",
+			s"sacrifice will never be forgotten."
+
+		},
+		true,
+		VCOL_LT_RED,
+		true,
+		4
+	},
+	{
+		8,								//#4
+		50,
 		4,
-		90,
-		20,
-		4,
-		s"this is the first level",
-		VCOL_DARK_GREY
+		1,
+		{
+			s"",
+			s""
+
+		},
+		false,
+		VCOL_RED,
+		false,
+		4	//points to itself
 	}
 };
 byte current_level;
@@ -192,6 +239,8 @@ typedef struct MOB {
 	// byte			height;
 	bool 			has_chute=false;
 } MOB;
+
+const char PRESS_FIRE_MSG[]=s"press fire or space to continue";
 
 
 /****Method Signatures****/
@@ -249,3 +298,5 @@ void erase_message(byte row);
 
 void show_title_screen();
 byte count_dead_troopers(byte start_row, byte start_col, byte end_row, byte end_col);
+
+void show_messages(const char const *msg1, const char* msg2);
