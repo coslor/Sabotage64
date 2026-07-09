@@ -39,6 +39,7 @@ long score;
 
 byte remaining_troopers;
 
+#pragma optimize(2)
 int main() {
 
 	//MUST BE THE FIRST INSTRUCTION
@@ -93,7 +94,7 @@ int main() {
 				remaining_troopers = levels[current_level].num_troopers;
 				update_vsprites();//show the trooper change
 
-
+ 
 				trooper_clock=levels[current_level].max_trooper_clock;
 				draw_barrel();
 
@@ -120,18 +121,44 @@ int main() {
 				run_game();
 				byte active_trooper_num=find_trooper(true);
 				if (active_trooper_num==0xff) {	//no active troopers left
-					//Wait for a second or so before starting next level
+
+					//Wait for a second or so before starting next level.
+					//	This is necessary to let any explosion noises complete
+					//	before we change screens & stop processing them.
 					for (byte i=0;i<80;i++) {
 						sidfx_loop();
 						update_vsprites();
+					}					
+					if (count_dead_troopers(0,0,22,19) >= 4) {
+						game_state=GS_GAME_OVER;
+						//TODO:INSERT LEFT SABOTAGE ANIMATION HERE
 					}
-					current_level=levels[current_level].next_level_num;
-					game_state=GS_START_LEVEL;
+					else if (count_dead_troopers(0,21,22,39) >= 4) {
+						game_state=GS_GAME_OVER;
+						//TODO:INSERT RIGHT SABOTAGE ANIMATION HERE
+					}
+					else if (count_dead_troopers(0,0 ,22,21) >= 4) {
+						game_state=GS_GAME_OVER;
+						//TODO INSERT LEFT SABOTAGE ANIMATION HERE
+					}
+					else {
+
+						current_level=levels[current_level].next_level_num;
+						game_state=GS_START_LEVEL;
+					}
 				}
 				break;
 			}
 			case GS_STOPPING:{
 				game_state = GS_ENDING;
+				break;
+			}
+			case GS_GAME_OVER:{ 
+				center_message(s"you have been sabotaged!",10);
+				center_message(s"game over",11);
+				center_message(s"press fire to continue",12);
+				wait_for_fire();
+				game_state=GS_INITIAL_START;
 				break;
 			}
 		}
@@ -153,6 +180,7 @@ void show_messages(const char const *msg1, const char* msg2) {
 
 void show_game_screen() {
 	memcpy(screen, game_screen,1000);
+	update_onscreen_score();
 	memcpy(charset, stored_charset, 0x800);
 	
 	//NOTE: spriteset copy moved to initial_start()
@@ -584,10 +612,6 @@ void kill_chute(byte trooper_num) {
 }
 
 
-void show_score() {
-	
-}
-
 void clear_troopers() {
 	byte mt=levels[current_level].max_troopers;
 	for (int i=0;i<mt;i++) {
@@ -702,11 +726,12 @@ long inc_score(long val) {
 	return score;
 }
 
+#pragma optimize(0)
 void update_onscreen_score() {
 
 	//TODO convert this to use itoa()?
-	char	score_chars[5];
-	sprintf(score_chars,"%.5ld\n",score);
+	char	score_chars[6];
+	sprintf(score_chars,"%.5ld",score);
 	for (byte i=0;i<5;i++) {
 		//for each char of the score, convert PETSCII value to screen code & store onscreen
 		*((char *)SCREEN_POS+i)=score_chars[i]-p'0'+s'0';//SCREEN_CODE_0;
@@ -756,6 +781,7 @@ void wait_for_fire() {
 	}
 }
 
+#pragma optimize(0)
 //end_row, end_col are inclusive
 byte count_dead_troopers(byte start_row, byte start_col, byte end_row, byte end_col) {
 	byte troopers_found=0;

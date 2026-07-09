@@ -1,5 +1,5 @@
 #define SPRITE_FILE 			"resources/sabotage64-0.3.7.spd"
-#define PLAY_SCREEN_FILE 		"resources/sabotage64 text 0.7.1.bin"
+#define PLAY_SCREEN_FILE 		"resources/sabotage64 text 0.11.bin"
 #define CHAR_FILE				"resources/Sabotage64 (Hybrid) - Main 0.9 - Chars.bin"
 #define PLAY_SCREEN_COLOR_FILE 	"resources/Sabotage64 (Hybrid) - Main - ColorMap 0.9.ctm"
 

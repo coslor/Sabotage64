@@ -105,7 +105,7 @@ typedef enum MOBType{
 
 typedef enum {
 	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_START_LEVEL, GS_RUNNING, 
-	GS_LEVEL_ENDING, GS_STOPPING, GS_ENDING
+	GS_LEVEL_ENDING, GS_STOPPING, GS_ENDING, GS_GAME_OVER
 } GameState;
 GameState game_state=GS_INITIAL_START;
 
@@ -127,9 +127,7 @@ typedef struct Level {
 	const bool	clear_before_starting;
 	const byte 	next_level_num;
 } Level;
-//0123456789012345678901234567890123456789
-//there is no victory, only honor.
-//valhalla awaits!
+
 Level levels[] = {
 	{									//#0
 		4,								//max_troopers
@@ -143,8 +141,8 @@ Level levels[] = {
 		},
 		true,							//pause for message?
 		VCOL_DARK_GREY,					//barrel color
-		true,							//clear all troopers bfore starting?
-		2								//next level #
+		true,							//clear all troopers before starting?
+		1								//next level #
 	},
 
 	{									//#1
@@ -159,7 +157,7 @@ Level levels[] = {
 		},
 		true,
 		VCOL_LT_GREY,
-		true,
+		false,
 		2
 	},
 	{									//#2
@@ -174,7 +172,7 @@ Level levels[] = {
 		},
 		true,
 		VCOL_RED,
-		true,
+		false,
 		3
 	},
 
@@ -192,7 +190,7 @@ Level levels[] = {
 		},
 		true,
 		VCOL_LT_RED,
-		true,
+		false,
 		4
 	},
 	{
