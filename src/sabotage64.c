@@ -28,7 +28,7 @@ byte troopers_left;
  * 		|
  * 		16
  */
-const byte BARREL_ANGLES[]={32,37,42,48,53,58,0};
+const byte BARREL_ANGLES[]={32,37,40,48,56,60,0};
 fx_96 barrel_dir;//=TO_FX96(3);
 
 const byte MAX_BULLET_CLOCK=20;
@@ -122,6 +122,8 @@ int main() {
 				byte active_trooper_num=find_trooper(true);
 				if (active_trooper_num==0xff) {	//no active troopers left
 
+					//Remove any stray bullets from the screen
+					init_bullets();
 					//Wait for a second or so before starting next level.
 					//	This is necessary to let any explosion noises complete
 					//	before we change screens & stop processing them.
