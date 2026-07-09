@@ -4,4 +4,4 @@
     <img src=sabotage64_clip.png alt="Screenshot of Sabotage gameplay" width="300">
 </p>
 
-...is an awesome game.
+...is a game for the Commodore 64 computer. It is intended as an homage to Mark Allen's amazing Sabotage for the Apple ][ back in 1981. The original was written in 6502 assembler, but my version is writen in [Oscar64](https://github.com/drmortalwombat/oscar64), a standards-compliant, optimizing C compiler that runs on various modern platforms, and generates C64 machine code. 
