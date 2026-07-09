@@ -1,2 +1,7 @@
+<center>
 SABOTAGE 64
-is an awesome game.
+<br>
+<img src=sabotage64_clip.png alt="Screenshot of Sabotage gameplay" width="300">
+</center>
+
+...is an awesome game.

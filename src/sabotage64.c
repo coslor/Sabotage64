@@ -728,8 +728,6 @@ long inc_score(long val) {
 
 #pragma optimize(0)
 void update_onscreen_score() {
-
-	//TODO convert this to use itoa()?
 	char	score_chars[6];
 	sprintf(score_chars,"%.5ld",score);
 	for (byte i=0;i<5;i++) {

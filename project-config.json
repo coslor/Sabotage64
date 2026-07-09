@@ -13,7 +13,8 @@
         "-xz",
         "-DVSPRITES_MAX=22",
         "-DNUM_IRQS=40",
-        "-Ddv"
+        "-Ddv",
+        "-d64=sabotage64.d64"
     ],
     "compiler": ""
 }
