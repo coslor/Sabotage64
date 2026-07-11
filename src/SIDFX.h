@@ -1,7 +1,7 @@
 #include <audio/sidfx.h>
 
 
-const SIDFX	SFXClick[1] = {{
+const SIDFX	SIDFXClick[1] = {{
 	2000, 2048, 
 	SID_CTRL_RECT | SID_CTRL_GATE,
 	SID_ATK_2 | SID_DKY_48,

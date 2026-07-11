@@ -295,6 +295,9 @@ void wait_for_fire();
 void erase_message(byte row);
 
 void show_title_screen();
-byte count_dead_troopers(byte start_row, byte start_col, byte end_row, byte end_col);
+byte count_landed_troopers(byte start_row, byte start_col, byte end_row, byte end_col);
+void reset_landed_trooper_color(byte new_color);
 
 void show_messages(const char const *msg1, const char* msg2);
+byte petscii_to_screen_char(byte c);
+void petscii_to_screen_str(char *msg, int len);

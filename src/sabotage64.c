@@ -1,14 +1,9 @@
 #include "sabotage64.h"
 
-
-
-// const byte* hello_text = "HELLO, WORLD!";
-//byte* screen = (byte*) (0x8000);
 byte* color = (byte*) (0xd800);
 
 MOB troopers[MAX_TROOPERS];
 MOB bullets[MAX_BULLETS];
-//fx_96 speed=0; //for debugger
 
 //const byte MAX_TROOPER_CLOCK=90;
 byte trooper_clock;
@@ -39,7 +34,8 @@ long score;
 
 byte remaining_troopers;
 
-#pragma optimize(2)
+
+#pragma optimize(3)
 int main() {
 
 	//MUST BE THE FIRST INSTRUCTION
@@ -127,27 +123,46 @@ int main() {
 					//Wait for a second or so before starting next level.
 					//	This is necessary to let any explosion noises complete
 					//	before we change screens & stop processing them.
-					for (byte i=0;i<80;i++) {
+					for (byte i=0;i<60;i++) {
 						sidfx_loop();
 						update_vsprites();
-					}					
-					if (count_dead_troopers(0,0,22,19) >= 4) {
+					}	
+					char l_trooper_count[26];
+					char r_trooper_count[26];
+
+
+					byte l_count=count_landed_troopers(10,0,22,19);
+					if (l_count >= 4) {
+						sprintf(l_trooper_count, "troopers on left side:%d", l_count);
+						//FIXME convert to screen codes?
+						petscii_to_screen_str(l_trooper_count, 26);
+						center_message(l_trooper_count, 9);
+						//center_message(s"troopers on left side:")
 						game_state=GS_GAME_OVER;
 						//TODO:INSERT LEFT SABOTAGE ANIMATION HERE
+						continue;
 					}
-					else if (count_dead_troopers(0,21,22,39) >= 4) {
+
+					//Wait half a second to separate the two counts a little
+					for (byte i=0;i<30;i++) {
+						sidfx_loop();
+						update_vsprites();
+					}
+
+					byte r_count=count_landed_troopers(10,21,22,39);
+					if (r_count >= 4) {
+						sprintf(r_trooper_count, "troopers on right side:%d", r_count);
+						//FIXME convert to screen codes?
+						//center_message(s"troopers on right side:")
+						petscii_to_screen_str(r_trooper_count, 26);
+						center_message(r_trooper_count,9);
 						game_state=GS_GAME_OVER;
 						//TODO:INSERT RIGHT SABOTAGE ANIMATION HERE
+						continue;
 					}
-					else if (count_dead_troopers(0,0 ,22,21) >= 4) {
-						game_state=GS_GAME_OVER;
-						//TODO INSERT LEFT SABOTAGE ANIMATION HERE
-					}
-					else {
-
-						current_level=levels[current_level].next_level_num;
-						game_state=GS_START_LEVEL;
-					}
+					reset_landed_trooper_color(TROOPER_COLOR);
+					current_level=levels[current_level].next_level_num;
+					game_state=GS_START_LEVEL;
 				}
 				break;
 			}
@@ -155,7 +170,8 @@ int main() {
 				game_state = GS_ENDING;
 				break;
 			}
-			case GS_GAME_OVER:{ 
+			case GS_GAME_OVER:{
+
 				center_message(s"you have been sabotaged!",10);
 				center_message(s"game over",11);
 				center_message(s"press fire to continue",12);
@@ -200,6 +216,7 @@ void show_title_screen() {
 	memcpy(screen,title_text_screen,1000);
 	memcpy(charset, stored_charset, 0x800);
 
+	memcpy(color,title_color_screen,1000);
 	//NOTE: spriteset copy moved to initial_start()
 	//memcpy(spriteset, stored_spriteset, 1280);
 
@@ -783,12 +800,78 @@ void wait_for_fire() {
 
 #pragma optimize(0)
 //end_row, end_col are inclusive
-byte count_dead_troopers(byte start_row, byte start_col, byte end_row, byte end_col) {
+byte count_landed_troopers(byte start_row, byte start_col, byte end_row, byte end_col) {
 	byte troopers_found=0;
 	for (byte r=start_row;r<=end_row;r++) {
 		for (byte c=start_col;c<=end_col;c++) {
-			troopers_found += (*(screen+r*40+c) == TROOPER_CHAR);
+			if (*(screen+r*40+c) == TROOPER_CHAR) {
+				*(color+r*40+c) = 1;
+				troopers_found++;
+				sidfx_play(0,SIDFXClick,1);
+				for (byte b=0;b<30;b++) {
+					sidfx_loop();
+					//vic_waitBottom(); 
+					//really just here to wait until next frame
+					update_vsprites();	
+				}
+			}
 		}
 	}
 	return troopers_found;
+}
+
+void reset_landed_trooper_color(byte new_color) {
+	for (byte r=0;r<=24;r++) {
+		for (byte c=0;c<=40;c++) {
+			if (*(screen+r*40+c) == TROOPER_CHAR) {
+				*(color+r*40+c) = new_color;
+			}
+		}
+	}
+
+}
+
+// byte petscii_to_screen_char(byte c) {
+//     // Uppercase A-Z (PETSCII $C1-$DA) -> Screen codes $01-$1A
+//     if (c >= 0xC1 && c <= 0xDA) {
+//         return c - 0x40;
+//     }
+//     // Lowercase a-z (PETSCII $61-$7A) -> Screen codes $01-$1A
+//     // Note: This matches the default C64 character set mapping
+//     else if (c >= 0x61 && c <= 0x7A) {
+//         return c - 0x20;
+//     }
+//     // Graphics characters and other ranges
+//     else if (c >= 0x40 && c <= 0x5F) {
+//         return c - 0x40;
+//     }
+//     else if (c >= 0x80 && c <= 0xBF) {
+//         return c - 0x80;
+//     }
+//     else if (c >= 0xC0 && c <= 0xFE) {
+//         return c - 0xC0;
+//     }
+//     // Leave numbers ($30-$39), punctuation, and control codes unchanged
+//     return c;
+// }
+
+/**
+ * Only works to convert lowercase ASCII to uppercase screen codes, for the C64 UPPER/GRAPHICS charset.
+ * 	Ignores digits (which are fine) and uppercase chars (which will show as gibberish). 
+ **/
+inline byte petscii_to_screen_char(byte c) {
+	if (c>='a' && (c<='z')) {
+		c-=96;
+	}
+	// else if (c>='0' && c<='9') {
+	// 	c-=48;
+	// }
+	return c;
+}
+
+//Converts *in-place*
+void petscii_to_screen_str(char *msg, int len) {
+	for (byte i=0;i<len;i++) {
+		msg[i] = petscii_to_screen_char(msg[i]);
+	}
 }
