@@ -1,7 +1,9 @@
 #define SPRITE_FILE 			"resources/sabotage64-0.3.7.spd"
-#define PLAY_SCREEN_FILE 		"resources/sabotage64 text 0.11.bin"
+#define PLAY_SCREEN_FILE 		"resources/play-screen-text.bin"
+//"resources/sabotage64 text 0.11.bin"
+#define PLAY_SCREEN_COLOR_FILE 	"resources/play-screen-color.bin"
+//"resources/Sabotage64 (Hybrid) - Main - ColorMap 0.9.ctm"
 #define CHAR_FILE				"resources/Sabotage64 (Hybrid) - Main 0.9 - Chars.bin"
-#define PLAY_SCREEN_COLOR_FILE 	"resources/Sabotage64 (Hybrid) - Main - ColorMap 0.9.ctm"
 
 #include <c64/types.h>
 
@@ -16,7 +18,7 @@
 // #pragma region(logo_screen_reg, 0x6000, 0x63ff,,,{logo_screen_sec})
 // #pragma region(logo_color_reg, 0x6400, 0x6fff,,,{logo_color_sec})
 
-#pragma region( lower, 0xa00, 0x1200, , , {code} )
+#pragma region( lower, 0xa00, 0x1200, , , {code,data} )
 
 //TODO Get a SID version of reveille working
 // #pragma section(sid_sec,0)
@@ -37,12 +39,12 @@
 //We don't have to put our stored screens, etc. in any particular place, since they just get
 //	copied to the right place when we need them.
 const char game_screen[] = { 
-	#embed PLAY_SCREEN_FILE 
+	#embed 1000 2 PLAY_SCREEN_FILE 
 };
  #pragma reference(game_screen)
 
  const char game_screen_color[] = {	
-	#embed PLAY_SCREEN_COLOR_FILE 
+	#embed 1000 2 PLAY_SCREEN_COLOR_FILE 
 };
  #pragma reference(game_screen_color)
 
@@ -56,6 +58,16 @@ const char stored_charset[] = {
 	#embed CHAR_FILE
 };
 #pragma reference(stored_charset)
+
+const char stored_welcome_screen[] = {
+	#embed 1000 2 "resources/welcome-screen-text.bin"
+};
+#pragma reference(stored_welcome_screen)
+
+const char stored_welcome_color[] = {
+	#embed 1000 2 "resources/welcome-screen-color.bin"
+};
+#pragma reference(stored_welcome_color)
 
 #pragma region( main, 0x30e8, 0x7fff, , , {code, data, bss} )
 

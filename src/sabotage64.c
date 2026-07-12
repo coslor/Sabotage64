@@ -56,6 +56,12 @@ int main() {
 				break;
 			}
 			case GS_WELCOME: {
+				vic.color_back=VCOL_LT_BLUE;
+				vic.color_border=VCOL_BLACK;
+
+				show_welcome_screen();
+				wait_for_fire();
+
 				game_state = GS_STARTING_GAME;
 				break;
 			}
@@ -874,4 +880,10 @@ void petscii_to_screen_str(char *msg, int len) {
 	for (byte i=0;i<len;i++) {
 		msg[i] = petscii_to_screen_char(msg[i]);
 	}
+}
+
+void show_welcome_screen() {
+	memcpy(screen,stored_welcome_screen, 1000);
+	memcpy(color,stored_welcome_color, 1000);
+
 }

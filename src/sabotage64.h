@@ -301,3 +301,5 @@ void reset_landed_trooper_color(byte new_color);
 void show_messages(const char const *msg1, const char* msg2);
 byte petscii_to_screen_char(byte c);
 void petscii_to_screen_str(char *msg, int len);
+
+void show_welcome_screen();
