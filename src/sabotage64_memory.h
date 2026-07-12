@@ -30,7 +30,7 @@
 // #pragma reference(music)
 
 #pragma data(data)
-#include "title_screen.h"
+//#include "title_screen.h"
 
 ////
 // load binary files for different screens, to be copied to the VIC screens when necessary
@@ -38,6 +38,8 @@
 
 //We don't have to put our stored screens, etc. in any particular place, since they just get
 //	copied to the right place when we need them.
+
+//TODO do RLE encoding or something on these embedded files, because their size is really bloating the PRG
 const char game_screen[] = { 
 	#embed 1000 2 PLAY_SCREEN_FILE 
 };
@@ -68,6 +70,16 @@ const char stored_welcome_color[] = {
 	#embed 1000 2 "resources/welcome-screen-color.bin"
 };
 #pragma reference(stored_welcome_color)
+
+const char title_text_screen[] = {
+	#embed 1000 2 "resources/start-screen-text.bin"
+};
+#pragma reference(title_text_screen)
+
+const char title_color_screen[] = {
+	#embed 1000 2 "resources/start-screen-color.bin"
+};
+#pragma reference(title_color_screen)
 
 #pragma region( main, 0x30e8, 0x7fff, , , {code, data, bss} )
 

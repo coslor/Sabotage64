@@ -4,3 +4,4 @@ build
 #.vscode/c_cpp_properties.json
 #.vscode/settings.json
 sabotage64/bak/*
+sabotage64/*.bin

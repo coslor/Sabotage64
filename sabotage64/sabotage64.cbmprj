@@ -81,7 +81,7 @@
             <FileOpen>False</FileOpen>
         </SourceFile>
         <SourceFile>
-            <Name>\welcome screen-not.sdd</Name>
+            <Name>\sabotage_64_title_screen.sdd</Name>
             <PrgName />
             <FileType>9</FileType>
             <IncludeInBuild>True</IncludeInBuild>
