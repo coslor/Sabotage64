@@ -5,15 +5,14 @@ byte* color = (byte*) (0xd800);
 MOB troopers[MAX_TROOPERS];
 MOB bullets[MAX_BULLETS];
 
-//const byte MAX_TROOPER_CLOCK=90;
+//how densely do we drop the troopers?
 byte trooper_clock;
 
+//How many troopers are still to be dropped? TODO:unused?
 byte troopers_left;
 
 //TODO Is this a compiler bug? If so, file it with DMW
 //const byte TROOPER_COLOR=(byte)VCOL_BROWN;
-
-//#define TROOPER_COLOR VCOL_WHITE
 
 /**
  * Angles look like:
@@ -27,11 +26,16 @@ const byte BARREL_ANGLES[]={32,37,40,48,56,60,0};
 fx_96 barrel_dir;//=TO_FX96(3);
 
 const byte MAX_BULLET_CLOCK=20;
-byte bullet_clock;//=MAX_BULLET_CLOCK;
+//How densely do the bullets get fired?
+byte bullet_clock;
+
+//Are we currently firing bullets?
 bool is_firing;
 
+//Current score
 long score;
 
+//How many troopers still need to be dropped on this level?
 byte remaining_troopers;
 
 
@@ -512,11 +516,7 @@ void handle_inputs() {
 		if (is_firing) {
 			if (bullet_clock-- == 0) {
 				if (! fire_bullet_now()) {
-					// vic.color_back=VCOL_RED;
 				}
-				// else {
-				// 	vic.color_back=VCOL_BLACK;
-				// }
 				bullet_clock = MAX_BULLET_CLOCK;
 			}
 		}
@@ -654,9 +654,10 @@ void initial_start() {
 
 	//Change screen & charset addresses
 	vic_setmode(VICM_TEXT,screen,charset);
-	//TODO does this buy us anything if the ROMs are turned off?
-	//Tell the Kernal where to find the text screen.
-	*HIBASE=(byte)((int)(&screen)/256);
+
+	////TODO does this buy us anything if the ROMs are turned off?
+	////Tell the Kernal where to find the text screen.
+	//*HIBASE=(byte)((int)(&screen)/256);
 
 	sidfx_init();
 	sid.fmodevol = 15;

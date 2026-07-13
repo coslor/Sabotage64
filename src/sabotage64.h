@@ -4,16 +4,13 @@
 #include <c64/rasterirq.h>
 #include <c64/vic.h>
 #include <c64/memmap.h>
-#include <c64/cia.h>
+#include <c64/cia.h>	//for cia_init()
 #include <stdio.h>
-#include <conio.h>
 #include <string.h>		//for memset()
-#include <time.h>
 #include <c64/joystick.h>
 #include <c64/keyboard.h>
 #include <audio/sidfx.h>
 #include <string.h>
-#include <math.h>
 
 //These have to be DEFINES (I think?)
 #define VSPRITES_MAX		22	//32
@@ -79,8 +76,8 @@ const byte TROOPER_VALUE=1;
 
 const byte* SCREEN_POS=(byte *)(SCREEN_LOC+992);
 
-/** HIBASE points to the current text screen for the Kernal. High byte only. */
-byte *HIBASE=(byte *)648;
+///** HIBASE points to the current text screen for the Kernal. High byte only. */
+//byte *HIBASE=(byte *)648;
 
 /**
  * 6-bit fixed-point sin,cos values. To calculate, use new_loc=old_loc+(speed*sin/cos[direction from 0-63])/64
@@ -99,9 +96,9 @@ signed char short_cos[64] = {
 	6,12,18,24,29,35,39,44,48,52,55,58,60,61,62
 };
 
-typedef enum MOBType{
-	SOLDIER,PARACHUTE,BULLET
-} MobType;
+// typedef enum MOBType{
+// 	SOLDIER,PARACHUTE,BULLET
+// } MobType;
 
 typedef enum {
 	GS_INITIAL_START, GS_WELCOME, GS_STARTING_GAME, GS_START_LEVEL, GS_RUNNING, 
@@ -122,9 +119,12 @@ typedef struct Level {
 	const byte 	num_bullets;
 	//NOTE: if you exceed the max length for a message, bad things happen!
 	const char	message[2][39];
+	//Should we show a message & require fire to continue?
 	const bool	pause_for_msg;
 	const byte	barrel_color;
+	//Clear all landed troopers before starting?
 	const bool	clear_before_starting;
+	//"Pointer" to next level
 	const byte 	next_level_num;
 } Level;
 
@@ -212,33 +212,19 @@ Level levels[] = {
 byte current_level;
 
 
-
-/**** MOB Stuff  ****/
-
-// typedef struct Box {
-// 	fx_96			x;
-// 	fx_96			y;
-// 	fx_96			end_x;
-// 	fx_96			end_y;
-// } Box;
-
 typedef struct MOB {
 	byte			vsprite_num;
     bool            active=false;
-	//MobType 		type;
-	//Box				box;
 	fx_96			x;
 	fx_96			y;
 	fx_96			end_x;
 	fx_96			end_y;
 	fx_96 			speed_x=0;
 	fx_96 			speed_y=0;
-	// byte			width;
-	// byte			height;
 	bool 			has_chute=false;
 } MOB;
 
-const char PRESS_FIRE_MSG[]=s"press fire or space to continue";
+//const char PRESS_FIRE_MSG[]=s"press fire or space to continue";
 
 
 /****Method Signatures****/
@@ -269,7 +255,7 @@ bool fire_bullet_now();
 
 void kill_trooper(byte trooper_num);
 void kill_bullet(byte bullet_num);
-/** @param num is the trooper num **/
+
 void kill_chute(byte trooper_num);
 
 void steer_bullets();
@@ -294,7 +280,6 @@ void center_message(const char *message, byte row);
 void wait_for_fire();
 void erase_message(byte row);
 
-void show_title_screen();
 byte count_landed_troopers(byte start_row, byte start_col, byte end_row, byte end_col);
 void reset_landed_trooper_color(byte new_color);
 
@@ -302,4 +287,5 @@ void show_messages(const char const *msg1, const char* msg2);
 byte petscii_to_screen_char(byte c);
 void petscii_to_screen_str(char *msg, int len);
 
+void show_title_screen();
 void show_welcome_screen();
