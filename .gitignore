@@ -5,3 +5,4 @@ build
 #.vscode/settings.json
 sabotage64/bak/*
 sabotage64/*.bin
+sabotage64.d64
