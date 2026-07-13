@@ -224,7 +224,7 @@ typedef struct MOB {
 	bool 			has_chute=false;
 } MOB;
 
-//const char PRESS_FIRE_MSG[]=s"press fire or space to continue";
+const char PRESS_FIRE_MSG[]=s"press fire or space to continue";
 
 
 /****Method Signatures****/
