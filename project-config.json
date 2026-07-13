@@ -14,7 +14,7 @@
         "-DVSPRITES_MAX=22",
         "-DNUM_IRQS=40",
         "-Ddv",
-        "-d64=sabotage64.d64"
+        "-d64=build/sabotage64.d64"
     ],
     "compiler": ""
 }
