@@ -11,6 +11,7 @@
 #include <c64/keyboard.h>
 #include <audio/sidfx.h>
 #include <string.h>
+#include <oscar.h>	//for oscar_expand_lzo()
 
 //These have to be DEFINES (I think?)
 #define VSPRITES_MAX		22	//32

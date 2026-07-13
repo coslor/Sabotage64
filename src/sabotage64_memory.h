@@ -40,46 +40,49 @@
 //	copied to the right place when we need them.
 
 //TODO do RLE encoding or something on these embedded files, because their size is really bloating the PRG
-const char game_screen[] = { 
-	#embed 1000 2 PLAY_SCREEN_FILE 
+const char game_screen_lzo[] = { 
+	#embed 1000 2 lzo PLAY_SCREEN_FILE 
 };
- #pragma reference(game_screen)
+ #pragma reference(game_screen_lzo)
 
- const char game_screen_color[] = {	
-	#embed 1000 2 PLAY_SCREEN_COLOR_FILE 
+ const char game_screen_color_lzo[] = {	
+	#embed 1000 2 lzo PLAY_SCREEN_COLOR_FILE 
 };
- #pragma reference(game_screen_color)
+ #pragma reference(game_screen_color_lzo)
 
- const char stored_spriteset[] =  { 
-	#embed spd_sprites SPRITE_FILE 
+ const char stored_spriteset_lzo[] =  { 
+	#embed spd_sprites lzo SPRITE_FILE 
 };
-#pragma reference(stored_spriteset);
+#pragma reference(stored_spriteset_lzo);
 
-const char stored_charset[] = {	
+const char stored_charset_lzo[] = {	
 //	#embed ctm_chars CHAR_FILE 
-	#embed CHAR_FILE
+	#embed lzo CHAR_FILE
 };
-#pragma reference(stored_charset)
+#pragma reference(stored_charset_lzo)
 
-const char stored_welcome_screen[] = {
-	#embed 1000 2 "resources/welcome-screen-text.bin"
+const char stored_welcome_screen_lzo[] = {
+	#embed 1000 2 lzo "resources/welcome-screen-text.bin"
 };
-#pragma reference(stored_welcome_screen)
+#pragma reference(stored_welcome_screen_lzo)
+// const char stored_welcome_screen[] = {
+// 	#embed 1000 2 "resources/welcome-screen-text.bin"
+// };
 
-const char stored_welcome_color[] = {
-	#embed 1000 2 "resources/welcome-screen-color.bin"
+const char stored_welcome_color_lzo[] = {
+	#embed 1000 2 lzo "resources/welcome-screen-color.bin"
 };
-#pragma reference(stored_welcome_color)
+#pragma reference(stored_welcome_color_lzo)
 
-const char title_text_screen[] = {
-	#embed 1000 2 "resources/start-screen-text.bin"
+const char title_text_screen_lzo[] = {
+	#embed 1000 2 lzo "resources/start-screen-text.bin"
 };
-#pragma reference(title_text_screen)
+#pragma reference(title_text_screen_lzo)
 
-const char title_color_screen[] = {
-	#embed 1000 2 "resources/start-screen-color.bin"
+const char title_color_screen_lzo[] = {
+	#embed 1000 2 lzo "resources/start-screen-color.bin"
 };
-#pragma reference(title_color_screen)
+#pragma reference(title_color_screen_lzo)
 
 #pragma region( main, 0x30e8, 0x7fff, , , {code, data, bss} )
 

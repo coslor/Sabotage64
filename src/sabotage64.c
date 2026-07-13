@@ -58,7 +58,7 @@ int main() {
 
 				game_state = GS_WELCOME;
 				break;
-			}
+			}//GS_INITIAL_START
 			case GS_WELCOME: {
 				vic.color_back=VCOL_LT_BLUE;
 				vic.color_border=VCOL_BLACK;
@@ -68,7 +68,7 @@ int main() {
 
 				game_state = GS_STARTING_GAME;
 				break;
-			}
+			}//GS_WELCOME
 			case GS_STARTING_GAME: {
 				srand(1);	//make every game the same 
 							//TODO: do I want every game the same?
@@ -89,7 +89,7 @@ int main() {
 
 				game_state = GS_START_LEVEL;
 				break;
-			}
+			}//GS_STARTING_GAME
 			case GS_START_LEVEL: {
 				init_bullets();
 				clear_troopers();	//get rid of any left over troopers in the sky
@@ -117,11 +117,11 @@ int main() {
 				troopers_left = levels[current_level].num_troopers;
 				game_state = GS_RUNNING;
 				break;
-			}
+			}//GS_START_LEVEL
 			case GS_RUNNING: {
 				run_game();				
 				break;
-			}
+			}//GS_RUNNING
 			//We've dropped all of our troopers, now we wait until they've all landed
 			case GS_LEVEL_ENDING: {
 				run_game();
@@ -144,10 +144,8 @@ int main() {
 					byte l_count=count_landed_troopers(10,0,22,19);
 					if (l_count >= 4) {
 						sprintf(l_trooper_count, "troopers on left side:%d", l_count);
-						//FIXME convert to screen codes?
 						petscii_to_screen_str(l_trooper_count, 26);
 						center_message(l_trooper_count, 9);
-						//center_message(s"troopers on left side:")
 						game_state=GS_GAME_OVER;
 						//TODO:INSERT LEFT SABOTAGE ANIMATION HERE
 						continue;
@@ -162,8 +160,6 @@ int main() {
 					byte r_count=count_landed_troopers(10,21,22,39);
 					if (r_count >= 4) {
 						sprintf(r_trooper_count, "troopers on right side:%d", r_count);
-						//FIXME convert to screen codes?
-						//center_message(s"troopers on right side:")
 						petscii_to_screen_str(r_trooper_count, 26);
 						center_message(r_trooper_count,9);
 						game_state=GS_GAME_OVER;
@@ -175,22 +171,21 @@ int main() {
 					game_state=GS_START_LEVEL;
 				}
 				break;
-			}
+			}//GS_LEVEL_ENDING
 			case GS_STOPPING:{
 				game_state = GS_ENDING;
 				break;
-			}
+			}//GS_STOPPING
 			case GS_GAME_OVER:{
-
 				center_message(s"you have been sabotaged!",10);
 				center_message(s"game over",11);
 				center_message(s"press fire to continue",12);
 				wait_for_fire();
 				game_state=GS_INITIAL_START;
 				break;
-			}
-		}
-	}
+			}//case GS_GAME_OVER
+		}//switch(game_state)
+	}//while
 
     return 0;
 }
@@ -206,32 +201,38 @@ void show_messages(const char const *msg1, const char* msg2) {
 	erase_message(13);
 }
 
-void show_game_screen() {
-	memcpy(screen, game_screen,1000);
+inline void show_game_screen() {
+	//memcpy(screen, game_screen,1000);
+	oscar_expand_lzo(screen, game_screen_lzo);
 	update_onscreen_score();
-	memcpy(charset, stored_charset, 0x800);
+
+	//TODO move to initial_start()??
+	//memcpy(charset, stored_charset, 0x800);
+	oscar_expand_lzo(charset, stored_charset_lzo);
 	
 	//NOTE: spriteset copy moved to initial_start()
 	//memcpy(spriteset, stored_spriteset, 1280);
 
 	//memset(color,1,1000);
-	memcpy(color,game_screen_color,1000);
+	//memcpy(color,game_screen_color,1000);
+	oscar_expand_lzo(color, game_screen_color_lzo);
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
 }
 
+inline void show_title_screen() {
+	//memcpy(screen,title_text_screen,1000);
+	oscar_expand_lzo(screen, title_text_screen_lzo);
 
-void show_title_screen() {
-	memcpy(screen,title_text_screen,1000);
-	memcpy(charset, stored_charset, 0x800);
+	//memcpy(color,title_color_screen,1000);
+	oscar_expand_lzo(color, title_color_screen_lzo);
 
-	memcpy(color,title_color_screen,1000);
 	//NOTE: spriteset copy moved to initial_start()
 	//memcpy(spriteset, stored_spriteset, 1280);
 
-//	memset(color,1,1000);
-	memcpy(color,title_color_screen, 1000);
+	//TODO duplicate??
+	//memcpy(color,title_color_screen, 1000);
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_WHITE;
@@ -338,7 +339,7 @@ void drop_trooper(byte num, byte vsprite_num, fx_96 x, fx_96 y, fx_96 speed_y) {
 void move_troopers() {
 	//#pragma unroll(full)
 	byte mt=levels[current_level].max_troopers;
-	for (int i=0;i<mt;i++) {
+	for (byte i=0;i<mt;i++) {
 		if (!troopers[i].active) {
 			continue;
 		}
@@ -390,9 +391,6 @@ void move_troopers() {
 		if (troopers[i].has_chute) {
 			vspr_movey(troopers[i].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET,y-7);	//chute
 		}
-		// else {
-		// 	vspr_hide(troopers[i].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
-		// }
 	}//for	
 }//move_troopers()
 
@@ -407,8 +405,6 @@ void land_trooper(byte trooper_num, int screen_loc) {
 	stop_trooper(trooper_num);
 	screen[screen_loc]=TROOPER_CHAR;
 	color[screen_loc]=TROOPER_COLOR;
-	//TODO is this necessary or useful?
-	//trooper_clock=MAX_TROOPER_CLOCK;
 }
 
 //stops, deactivates, and hides trooper and chute; leaves smooshed char; plays explosion, incs score, resets trooper clock
@@ -582,14 +578,12 @@ bool fire_bullet_now() {
 
 
 inline bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy) {
-
 	return (x >= bx && x <=b_endx && y>=by && y<=b_endy);
 }
 
 void check_bullet_collisions() {
-	//yes, this is a crummy algorithm(0n^2), but for the small number of bullets/troopers
+	//yes, this is a crummy algorithm(O(n^2)), but for the small number of bullets/troopers
 	//	it should be fine.
-	
 	byte nb=levels[current_level].num_bullets;
 	for (byte bn=0;bn<nb;bn++) {
 		MOB *bullet = &bullets[bn];
@@ -655,10 +649,6 @@ void initial_start() {
 	//Change screen & charset addresses
 	vic_setmode(VICM_TEXT,screen,charset);
 
-	////TODO does this buy us anything if the ROMs are turned off?
-	////Tell the Kernal where to find the text screen.
-	//*HIBASE=(byte)((int)(&screen)/256);
-
 	sidfx_init();
 	sid.fmodevol = 15;
 
@@ -677,9 +667,11 @@ void initial_start() {
 
 	rirq_start();
 
-	//copy custom charset to VIC memory
-	memcpy(spriteset, stored_spriteset, 1280);
-
+	//# of sprites * 64 bytes
+	//memcpy(spriteset, stored_spriteset, 20*64);
+	oscar_expand_lzo(spriteset, stored_spriteset_lzo);
+	//memcpy(charset, stored_charset, 0x800);
+	oscar_expand_lzo(charset, stored_charset_lzo);
 }
 
 void run_game() {
@@ -780,7 +772,7 @@ void center_message(const char const *message, byte row) {
 }
 
 //#pragma optimize(0)
-void erase_message(byte row) {
+inline void erase_message(byte row) {
 	//39 space chars
 	const char empty_msg[]=s"                                       ";
 	center_message(empty_msg, row);
@@ -805,7 +797,7 @@ void wait_for_fire() {
 	}
 }
 
-#pragma optimize(0)
+//#pragma optimize(0)
 //end_row, end_col are inclusive
 byte count_landed_troopers(byte start_row, byte start_col, byte end_row, byte end_col) {
 	byte troopers_found=0;
@@ -815,15 +807,15 @@ byte count_landed_troopers(byte start_row, byte start_col, byte end_row, byte en
 				*(color+r*40+c) = 1;
 				troopers_found++;
 				sidfx_play(0,SIDFXClick,1);
+				//wait for soundfx to end
 				for (byte b=0;b<30;b++) {
 					sidfx_loop();
-					//vic_waitBottom(); 
 					//really just here to wait until next frame
 					update_vsprites();	
-				}
-			}
-		}
-	}
+				}//b
+			}//if
+		}//for c
+	}//for r
 	return troopers_found;
 }
 
@@ -877,14 +869,15 @@ inline byte petscii_to_screen_char(byte c) {
 }
 
 //Converts *in-place*
-void petscii_to_screen_str(char *msg, int len) {
+inline void petscii_to_screen_str(char *msg, int len) {
 	for (byte i=0;i<len;i++) {
 		msg[i] = petscii_to_screen_char(msg[i]);
 	}
 }
 
-void show_welcome_screen() {
-	memcpy(screen,stored_welcome_screen, 1000);
-	memcpy(color,stored_welcome_color, 1000);
-
+inline void show_welcome_screen() {
+	//memcpy(screen,stored_welcome_screen, 1000);
+	oscar_expand_lzo(screen, stored_welcome_screen_lzo);
+	//memcpy(color,stored_welcome_color, 1000);
+	oscar_expand_lzo(color, stored_welcome_color_lzo);
 }
