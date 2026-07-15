@@ -206,9 +206,9 @@ inline void show_game_screen() {
 	oscar_expand_lzo(screen, game_screen_lzo);
 	update_onscreen_score();
 
-	//TODO move to initial_start()??
-	//memcpy(charset, stored_charset, 0x800);
-	oscar_expand_lzo(charset, stored_charset_lzo);
+	//Moved to initial_start()
+	////memcpy(charset, stored_charset, 0x800);
+	//oscar_expand_lzo(charset, stored_charset_lzo);
 	
 	//NOTE: spriteset copy moved to initial_start()
 	//memcpy(spriteset, stored_spriteset, 1280);
