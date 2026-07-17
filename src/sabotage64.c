@@ -179,6 +179,78 @@ int main() {
 				break;
 			}//GS_STOPPING
 			case GS_GAME_OVER:{
+				//barrel_dir=TO_FX96(3);
+
+				vic.color_back=VCOL_LT_RED;
+
+				sidfx_play(1, SIDFXPlayerExplosion, 4);
+
+				byte shake_table[16] = {
+					3, 4, 6, 7, 7, 6, 4, 3,
+					3, 2, 1, 0, 0, 2, 2, 3
+					// 0, 2, 5, 7, 7, 5, 2, 0,
+					// 0,255-2,255-5,255-7,255-7,255-5,255-2, 0
+				};
+
+				//byte old_d011=*(char*)0xd011;
+
+
+				//shake screen
+				for (byte i=0;i<100;i++) {
+					byte shake_value=shake_table[i % 16];
+					// *((char *)0xd11) = shake_value | 0x18; //(*(char*)0xd011) & 248 |shake_value; //shake_value | 0x18;
+					set_d011(shake_value);
+					vspr_set(VS_BARREL_OFFSET,BARREL_X,BARREL_Y+shake_value,SPRITE_OFFSET+19,
+							VCOL_YELLOW);
+					update_vsprites();
+					sidfx_loop();
+					//vic_waitBottom();					
+				}
+
+				// /////
+				// //	NOTE: if y in the loop below is made an int instead of a byte, 
+				// //			the barrel simply disappears. I think maybe some kind of 
+				// //			incorrect optimization is going on? Not really sure, but
+				// //			for now, leave it a byte and everything's OK.
+				// /////
+				// for (byte y=189;y>25;y-=5) {
+				// 	vspr_set(VS_BARREL_OFFSET,BARREL_X+(BARREL_Y-y),y,BARREL_SPRITE+3,
+				// 		VCOL_LT_RED);
+
+				// 	//sidfx_loop();
+				// 	update_vsprites();
+				// 	byte shake_value=shake_table[(y/7) % 7];
+				// 	//*((char *)0xd11) = shake_value | 0x18; //(*(char*)0xd011) & 248 |shake_value; //shake_value | 0x18;
+				// 	__asm {
+				// 		//sei
+				// 		lda $d011
+				// 		and #248
+				// 		ora shake_value
+				// 		sta $d011
+				// 		//cli
+				// 	}
+
+				// 	vic_waitBottom();
+
+				// }
+
+
+				for (byte i=0;i<40;i++) {
+					sidfx_loop();
+
+				}
+
+				//*(char*)0xd011 = old_d011;
+				vic_waitBottom();
+				set_d011(3);
+
+				//vspr_set(VS_BARREL_OFFSET,BARREL_X,BARREL_Y,SPRITE_OFFSET+19,
+				//		VCOL_LT_RED);
+				vspr_hide(VS_BARREL_OFFSET);
+				update_vsprites();
+
+				vic.color_back=VCOL_LT_BLUE;
+
 				center_message(s"you have been sabotaged!",10);
 				center_message(s"game over",11);
 				center_message(s"press fire to continue",12);
@@ -190,6 +262,17 @@ int main() {
 	}//while
 
     return 0;
+}
+
+void set_d011(byte n) {
+	__asm {
+		sei
+		lda $d011
+		and #248
+		ora n
+		sta $d011
+		cli
+	}
 }
 
 //#pragma optimize(0)
@@ -467,7 +550,6 @@ void draw_barrel() {
 			BARREL_X,
 			BARREL_Y,
 			spr_num,
-			//BARREL_COLOR);	
 			levels[current_level].barrel_color
 	);
 }
@@ -776,7 +858,7 @@ inline void erase_message(byte row) {
 void wait_for_fire() { 
 	while (true) {
 		joy_poll(0);
-		keyb_poll();	
+		keyb_poll();
 		if (key_pressed(KSCAN_SPACE) || joyb[0]>0) {
 			break;
 		}
@@ -784,7 +866,7 @@ void wait_for_fire() {
 	//now debounce
 	while (true) {
 		joy_poll(0);
-		keyb_poll();	
+		keyb_poll();
 		if (!key_pressed(KSCAN_SPACE) && !joyb[0]>0) {
 			break;
 		}

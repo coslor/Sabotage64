@@ -334,3 +334,5 @@ void petscii_to_screen_str(char *msg, int len);
 
 void show_title_screen();
 void show_welcome_screen();
+
+void set_d011(byte n);

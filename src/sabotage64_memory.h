@@ -1,4 +1,4 @@
-#define SPRITE_FILE 			"resources/sabotage64-0.3.7.spd"
+#define SPRITE_FILE 			"resources/sabotage64-0.3.8.spd"
 #define PLAY_SCREEN_FILE 		"resources/play-screen-text.bin"
 //"resources/sabotage64 text 0.11.bin"
 #define PLAY_SCREEN_COLOR_FILE 	"resources/play-screen-color.bin"
