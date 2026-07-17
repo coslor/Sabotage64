@@ -56,7 +56,9 @@ const enum VICColors BULLET_COLOR	=VCOL_WHITE;
 const enum VICColors TROOPER_COLOR	=VCOL_DARK_GREY;
 const enum VICColors CHUTE_COLOR	=VCOL_WHITE;
 
+//In pixels
 const byte BARREL_X				=176;
+//In pixels
 const byte BARREL_Y				=189;
 
 //Can you steer the shells after they've been shot?
@@ -64,6 +66,7 @@ const byte BARREL_Y				=189;
 
 //speed is fractional, as in n/64
 const fx_96 TROOPER_CHUTE_SPEED	=20;
+//speed is fractional, as in n/64
 const fx_96 TROOPER_NO_CHUTE_SPEED=36;
 
 /*** Screen codes  ***/
@@ -134,10 +137,11 @@ typedef struct Level {
 } Level;
 
 Level levels[] = {
+	//Level 0 has 4 max troopers, 4 bullets
 	{									//#0
-		4,								//max_troopers
+		5,								//max_troopers
 		90,								//max_trooper_clock
-		4,								//num_troopers
+		8,								//num_troopers
 		4,								//num_bullets
 		{
 		   //0123456789012345678901234567890123456789
@@ -150,10 +154,28 @@ Level levels[] = {
 		1								//next level #
 	},
 
+	//Level 1 extends level 0 with no message, 6 troopers, 4 bullets
 	{									//#1
-		6,								//max_troopers
-		70,								//max_trooper_clock
+		7,								//max_troopers
+		90,								//max_trooper_clock
 		8,								//num_troopers
+		4,								//num_bullets
+		{
+		   //0123456789012345678901234567890123456789
+			s"",	//message
+			s""	//message 2
+		},
+		false,							//pause for message?
+		VCOL_DARK_GREY,					//barrel color
+		false,							//clear all troopers before starting?
+		2								//next level #
+	},
+
+	//Level 2: 6 troopers, but troopers come faster and only 3 bullets
+	{									//#2
+		6,								//max_troopers
+		80,								//max_trooper_clock
+		12,								//num_troopers
 		3,								//num_bullets
 		{
 		   //0123456789012345678901234567890123456789
@@ -163,12 +185,30 @@ Level levels[] = {
 		true,
 		VCOL_LT_GREY,
 		false,
-		2
+		3
 	},
-	{									//#2
-		7,								//max_troopers
+
+	//Level 3: 3 bullets, 8 troopers, faster release
+	{									//#3
+		8,								//max_troopers
 		70,								//max_trooper_clock
 		12,								//num_troopers
+		3,								//num_bullets
+		{
+		   //0123456789012345678901234567890123456789
+			s"",		//message
+			s""
+		},
+		true,
+		VCOL_LT_GREY,
+		false,
+		4
+	},
+	//Level 4: 2 bullets, 6 troopers, faster release
+	{									//#4
+		7,								//max_troopers
+		60,								//max_trooper_clock
+		16,								//num_troopers
 		2,								//num_bullets
 		{
 		   //0123456789012345678901234567890123456789
@@ -178,14 +218,14 @@ Level levels[] = {
 		true,
 		VCOL_RED,
 		false,
-		3
+		5
 	},
 
 	{
-										//#3
+										//#5
 		8,
 		50,
-		16,
+		18,
 		1,
 		{
 		   //0123456789012345678901234567890123456789
@@ -196,12 +236,12 @@ Level levels[] = {
 		true,
 		VCOL_LT_RED,
 		false,
-		4
+		6
 	},
 	{
-		8,								//#4
+		8,								//#6
 		50,
-		4,
+		20,
 		1,
 		{
 			s"",
@@ -211,7 +251,7 @@ Level levels[] = {
 		false,
 		VCOL_RED,
 		false,
-		4	//points to itself
+		6	//points to itself
 	}
 };
 byte current_level;

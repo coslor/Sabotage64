@@ -562,9 +562,15 @@ bool fire_bullet_now() {
 }
 
 
-inline bool point_is_in_box(int x, int y, int bx, int by, int b_endx, int b_endy) {
-	return (x >= bx && x <=b_endx && y>=by && y<=b_endy);
+inline bool point_is_in_box(int px, int py, int bx, int by, int b_endx, int b_endy) {
+	return (px >= bx && px <=b_endx && py>=by && py<=b_endy);
 }
+
+inline bool rect_is_in_box_inclusive(int px, int py, int p_endx, int p_endy, 
+	int bx, int by, int b_endx, int b_endy) {
+		return (px <= b_endx && p_endx >= bx &&
+				py <= b_endy && p_endy >= by);
+	}
 
 void check_bullet_collisions() {
 	//yes, this is a crummy algorithm(O(n^2)), but for the small number of bullets/troopers
@@ -581,8 +587,12 @@ void check_bullet_collisions() {
 			if (! trooper->active) {
 				continue;
 			}
-			if (point_is_in_box(bullet->x,bullet->y,
-					trooper->x,trooper->y,trooper->end_x,trooper->end_y)) {
+			//if (point_is_in_box(bullet->x,bullet->y,
+			//		trooper->x,trooper->y,trooper->end_x,trooper->end_y)) {
+
+			//TODO:Is the 1x1 hitbox big enough?
+			if (rect_is_in_box_inclusive(bullet->x, bullet->y, bullet->x+TO_INT(1), bullet->y+TO_INT(1),
+				trooper->x, trooper->y, trooper->end_x, trooper->end_y)) {
 				stop_trooper(tn);
 				kill_trooper(tn);
 				kill_bullet(bn);
@@ -626,6 +636,7 @@ void clear_troopers() {
 
 }
 
+//Only runs once
 void initial_start() {
     // Disable CIA interrupts, we do not want interference
 	// with our joystick interrupt
