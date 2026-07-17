@@ -29,18 +29,22 @@ const byte MAX_BULLETS			=4;
 //actual bullet speed is this value /64
 const fx_96 BULLET_SPEED		=120;
 
+const byte MAX_HELIS			=6;
+
 //If defined, all shots automatically hit
 //#define PERFECT_SHOT
 
 const byte SPRITE_OFFSET		=0x80;
 const byte CHUTE_SPRITE			=SPRITE_OFFSET+0;
 const byte TROOPER_SPRITE		=SPRITE_OFFSET+1;
-const byte BARREL_SPRITE_OFFSET	=SPRITE_OFFSET+9;
+const byte BARREL_SPRITE		=SPRITE_OFFSET+9;
 const byte BULLET_SPRITE		=SPRITE_OFFSET+18;
+const byte HELI_SPRITE			=SPRITE_OFFSET+16;
 
 /** VSprite # offsets. VSprites are stored as:
-*	RTT..TCC..CBB..B
+*	RTT..TCC..CBB..BHHHHH
 *	...where T are troopers, C are chutes, B are bullets, and R is the barrel
+*	...and H are the helicopters
 **/
 
 const byte VS_TROOPER_OFFSET	=1;
@@ -48,32 +52,32 @@ const byte VS_CHUTE_OFFSET		=VS_TROOPER_OFFSET + MAX_TROOPERS;
 const byte VS_BULLET_OFFSET		=VS_CHUTE_OFFSET + MAX_CHUTES;
 const byte VS_BARREL_OFFSET		=0;
 
-const enum VICColors BULLET_COLOR=VCOL_WHITE;
-const enum VICColors TROOPER_COLOR=VCOL_DARK_GREY;
-const enum VICColors CHUTE_COLOR=VCOL_WHITE;
+const enum VICColors BULLET_COLOR	=VCOL_WHITE;
+const enum VICColors TROOPER_COLOR	=VCOL_DARK_GREY;
+const enum VICColors CHUTE_COLOR	=VCOL_WHITE;
 
-const byte BARREL_X			=176;
-const byte BARREL_Y			=189;
+const byte BARREL_X				=176;
+const byte BARREL_Y				=189;
 
 //Can you steer the shells after they've been shot?
 //#define STEERABLE_BULLETS
 
 //speed is fractional, as in n/64
-const fx_96 TROOPER_CHUTE_SPEED=20;
+const fx_96 TROOPER_CHUTE_SPEED	=20;
 const fx_96 TROOPER_NO_CHUTE_SPEED=36;
 
 /*** Screen codes  ***/
-const byte TROOPER_CHAR	=152;
-const byte EMPTY_CHAR	=0x20;
-const byte GROUND_CHAR	=0xa0;
-const byte BUILDING_CHAR=0x80;
-const byte SMOOSHED_CHAR=153;
+const byte TROOPER_CHAR			=152;
+const byte EMPTY_CHAR			=0x20;
+const byte GROUND_CHAR			=0xa0;
+const byte BUILDING_CHAR		=0x80;
+const byte SMOOSHED_CHAR		=153;
 //half-square used on screen to give the "SCORE" display a little more room
-const byte HALF_GROUND_SQUARE=0xf9;	
+const byte HALF_GROUND_SQUARE=	0xf9;	
 
-const byte SCREEN_CODE_0=48;
+const byte SCREEN_CODE_0=		48;
 
-const byte TROOPER_VALUE=1;
+const byte TROOPER_SCORE_VALUE=		1;
 
 const byte* SCREEN_POS=(byte *)(SCREEN_LOC+992);
 

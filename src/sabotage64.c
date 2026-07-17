@@ -4,6 +4,7 @@ byte* color = (byte*) (0xd800);
 
 MOB troopers[MAX_TROOPERS];
 MOB bullets[MAX_BULLETS];
+MOB helicopters[MAX_HELIS];
 
 //how densely do we drop the troopers?
 byte trooper_clock;
@@ -204,35 +205,19 @@ void show_messages(const char const *msg1, const char* msg2) {
 inline void show_game_screen() {
 	//memcpy(screen, game_screen,1000);
 	oscar_expand_lzo(screen, game_screen_lzo);
-	update_onscreen_score();
 
-	//Moved to initial_start()
-	////memcpy(charset, stored_charset, 0x800);
-	//oscar_expand_lzo(charset, stored_charset_lzo);
-	
-	//NOTE: spriteset copy moved to initial_start()
-	//memcpy(spriteset, stored_spriteset, 1280);
-
-	//memset(color,1,1000);
-	//memcpy(color,game_screen_color,1000);
 	oscar_expand_lzo(color, game_screen_color_lzo);
+
+	update_onscreen_score();
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
 }
 
 inline void show_title_screen() {
-	//memcpy(screen,title_text_screen,1000);
 	oscar_expand_lzo(screen, title_text_screen_lzo);
 
-	//memcpy(color,title_color_screen,1000);
 	oscar_expand_lzo(color, title_color_screen_lzo);
-
-	//NOTE: spriteset copy moved to initial_start()
-	//memcpy(spriteset, stored_spriteset, 1280);
-
-	//TODO duplicate??
-	//memcpy(color,title_color_screen, 1000);
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_WHITE;
@@ -433,7 +418,7 @@ void kill_trooper(byte trooper_num) {
 	//vspr_hide(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
 	sidfx_play(1,SIDFXQuickExplosion,1);
 
-	inc_score(TROOPER_VALUE);
+	inc_score(TROOPER_SCORE_VALUE);
 
 	trooper_clock=levels[current_level].max_trooper_clock;
 }
@@ -476,7 +461,7 @@ byte find_trooper(bool active) {
  * @param dir the direction of the barrel, from 32 to 0 (or 64)
  */
 void draw_barrel() {
-	int spr_num=BARREL_SPRITE_OFFSET+TO_INT(barrel_dir);
+	int spr_num=BARREL_SPRITE+TO_INT(barrel_dir);
 	vspr_set(VS_BARREL_OFFSET,
 			BARREL_X,
 			BARREL_Y,
