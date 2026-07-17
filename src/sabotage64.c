@@ -35,6 +35,7 @@ bool is_firing;
 
 //Current score
 long score;
+long highscore=0;
 
 //How many troopers still need to be dropped on this level?
 byte remaining_troopers;
@@ -79,6 +80,7 @@ int main() {
 				show_game_screen();
 
 				current_level = 0;
+				score=0;
 
 				barrel_dir=TO_FX96(3);
 				draw_barrel();
@@ -252,9 +254,27 @@ int main() {
 				vic.color_back=VCOL_LT_BLUE;
 
 				center_message(s"you have been sabotaged!",10);
-				center_message(s"game over",11);
-				center_message(s"press fire to continue",12);
+				center_message(s"your game is over",11);
+				center_message(s"press fire to continue",14);
+
+				if (score > highscore) {
+					highscore=score;
+					update_onscreen_highscore();
+
+					center_message(s"you got a new high score!",12);
+					sidfx_play(1,SIDFXFlagArrival,7);
+
+					//wait to let the SIDFx play for a bit
+					for (byte i=0;i<30;i++) {
+						sidfx_loop();
+						//update_vsprites();
+						vic_waitBottom();
+					}
+				}
+
+
 				wait_for_fire();
+
 				game_state=GS_INITIAL_START;
 				break;
 			}//case GS_GAME_OVER
@@ -293,6 +313,7 @@ inline void show_game_screen() {
 	oscar_expand_lzo(color, game_screen_color_lzo);
 
 	update_onscreen_score();
+	update_onscreen_highscore();
 
 	vic.color_border=VCOL_BLACK;
 	vic.color_back=VCOL_LT_BLUE;
@@ -496,10 +517,6 @@ void stop_trooper(byte trooper_num) {
 
 //plays explosion, incs score, resets trooper clock
 void kill_trooper(byte trooper_num) {
-	//vspr_color(troopers[num].vsprite_num,VCOL_RED);
-	//troopers[trooper_num].active=false;
-	//vspr_hide(troopers[trooper_num].vsprite_num);
-	//vspr_hide(troopers[trooper_num].vsprite_num-VS_TROOPER_OFFSET+VS_CHUTE_OFFSET);
 	sidfx_play(1,SIDFXQuickExplosion,1);
 
 	inc_score(TROOPER_SCORE_VALUE);
@@ -820,13 +837,22 @@ long inc_score(long val) {
 	return score;
 }
 
-#pragma optimize(0)
+//#pragma optimize(0)
 void update_onscreen_score() {
 	char	score_chars[6];
 	sprintf(score_chars,"%.5ld",score);
 	for (byte i=0;i<5;i++) {
 		//for each char of the score, convert PETSCII value to screen code & store onscreen
-		*((char *)SCREEN_POS+i)=score_chars[i]-p'0'+s'0';//SCREEN_CODE_0;
+		*((char *)SCORE_POS+i)=score_chars[i]-p'0'+s'0';//SCREEN_CODE_0;
+	}
+}
+
+void update_onscreen_highscore() {
+	char	hiscore_chars[6];
+	sprintf(hiscore_chars,"%.5ld",highscore);
+	for (byte i=0;i<5;i++) {
+		//for each char of the score, convert PETSCII value to screen code & store onscreen
+		*((char *)HISCORE_POS+i)=hiscore_chars[i]-p'0'+s'0';//SCREEN_CODE_0;
 	}
 }
 

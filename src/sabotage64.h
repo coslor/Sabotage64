@@ -76,13 +76,14 @@ const byte GROUND_CHAR			=0xa0;
 const byte BUILDING_CHAR		=0x80;
 const byte SMOOSHED_CHAR		=153;
 //half-square used on screen to give the "SCORE" display a little more room
-const byte HALF_GROUND_SQUARE=	0xf9;	
+const byte HALF_GROUND_SQUARE	=0xf9;	
 
-const byte SCREEN_CODE_0=		48;
+const byte SCREEN_CODE_0		=48;
 
-const byte TROOPER_SCORE_VALUE=		1;
+const byte TROOPER_SCORE_VALUE	=1;
 
-const byte* SCREEN_POS=(byte *)(SCREEN_LOC+992);
+const byte* SCORE_POS			=(byte *)(SCREEN_LOC + 992);
+const byte* HISCORE_POS			=(byte *)(SCREEN_LOC + 970);
 
 ///** HIBASE points to the current text screen for the Kernal. High byte only. */
 //byte *HIBASE=(byte *)648;
@@ -199,7 +200,7 @@ Level levels[] = {
 			s"",		//message
 			s""
 		},
-		true,
+		false,
 		VCOL_LT_GREY,
 		false,
 		4
@@ -319,6 +320,7 @@ void play_sid();
 long set_score(long val);
 long inc_score(long val);
 void update_onscreen_score();
+void update_onscreen_highscore();
 
 /**Prints & centers a given message. Message should be in screen codes. */
 void center_message(const char *message, byte row);
