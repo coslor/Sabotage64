@@ -78,6 +78,8 @@ int main() {
 				sidfx_play(1,SFXReveille,20);
 				show_game_screen();
 
+				current_level = 0;
+
 				barrel_dir=TO_FX96(3);
 				draw_barrel();
 
@@ -86,7 +88,6 @@ int main() {
 				trooper_clock=levels[current_level].max_trooper_clock;
 				bullet_clock=MAX_BULLET_CLOCK;
 				is_firing=false;
-				current_level = 0;
 
 				game_state = GS_START_LEVEL;
 				break;
@@ -570,7 +571,7 @@ inline bool rect_is_in_box_inclusive(int px, int py, int p_endx, int p_endy,
 	int bx, int by, int b_endx, int b_endy) {
 		return (px <= b_endx && p_endx >= bx &&
 				py <= b_endy && p_endy >= by);
-	}
+}
 
 void check_bullet_collisions() {
 	//yes, this is a crummy algorithm(O(n^2)), but for the small number of bullets/troopers
@@ -607,9 +608,6 @@ void check_bullet_collisions() {
 		}//for j
 	}//for i
 }//check_bullet_collisions
-
-
-
 
 void kill_bullet(byte bullet_num) {
 	bullets[bullet_num].active = false;
