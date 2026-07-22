@@ -257,6 +257,14 @@ Level levels[] = {
 };
 byte current_level;
 
+const byte SABOTAGED_MSG_LINE1[]=s"you have been <sabotaged>!";
+const byte SABOTAGED_MSG_LINE2[]=s"your game is over";
+//const byte PRESS_FIRE_MSG[]=s"press fire to continue";
+const byte PRESS_FIRE_MSG[]=s"press fire or space to continue";
+
+
+const byte HIGH_SCORE_MSG[]=s"you got a new high score!";
+
 
 typedef struct MOB {
 	byte			vsprite_num;
@@ -270,7 +278,6 @@ typedef struct MOB {
 	bool 			has_chute=false;
 } MOB;
 
-const char PRESS_FIRE_MSG[]=s"press fire or space to continue";
 
 
 /****Method Signatures****/
@@ -322,8 +329,8 @@ long inc_score(long val);
 void update_onscreen_score();
 void update_onscreen_highscore();
 
-/**Prints & centers a given message. Message should be in screen codes. */
-void center_message(const char *message, byte row);
+
+void center_message(const char const *message, byte row);
 void wait_for_fire();
 void erase_message(byte row);
 
@@ -337,4 +344,4 @@ void petscii_to_screen_str(char *msg, int len);
 void show_title_screen();
 void show_welcome_screen();
 
-void set_d011(byte n);
+void set_vert_scroll(byte n);

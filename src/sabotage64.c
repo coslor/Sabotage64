@@ -187,91 +187,53 @@ int main() {
 
 				sidfx_play(1, SIDFXPlayerExplosion, 4);
 
+				//remember, a value of 3 here is the default. <3 is up, >3 is down
 				byte shake_table[16] = {
 					3, 4, 6, 7, 7, 6, 4, 3,
 					3, 2, 1, 0, 0, 2, 2, 3
-					// 0, 2, 5, 7, 7, 5, 2, 0,
-					// 0,255-2,255-5,255-7,255-7,255-5,255-2, 0
 				};
-
-				//byte old_d011=*(char*)0xd011;
 
 
 				//shake screen
 				for (byte i=0;i<100;i++) {
 					byte shake_value=shake_table[i % 16];
-					// *((char *)0xd11) = shake_value | 0x18; //(*(char*)0xd011) & 248 |shake_value; //shake_value | 0x18;
-					set_d011(shake_value);
+					set_vert_scroll(shake_value);
 					vspr_set(VS_BARREL_OFFSET,BARREL_X,BARREL_Y+shake_value,SPRITE_OFFSET+19,
 							VCOL_YELLOW);
 					update_vsprites();
 					sidfx_loop();
-					//vic_waitBottom();					
 				}
 
-				// /////
-				// //	NOTE: if y in the loop below is made an int instead of a byte, 
-				// //			the barrel simply disappears. I think maybe some kind of 
-				// //			incorrect optimization is going on? Not really sure, but
-				// //			for now, leave it a byte and everything's OK.
-				// /////
-				// for (byte y=189;y>25;y-=5) {
-				// 	vspr_set(VS_BARREL_OFFSET,BARREL_X+(BARREL_Y-y),y,BARREL_SPRITE+3,
-				// 		VCOL_LT_RED);
-
-				// 	//sidfx_loop();
-				// 	update_vsprites();
-				// 	byte shake_value=shake_table[(y/7) % 7];
-				// 	//*((char *)0xd11) = shake_value | 0x18; //(*(char*)0xd011) & 248 |shake_value; //shake_value | 0x18;
-				// 	__asm {
-				// 		//sei
-				// 		lda $d011
-				// 		and #248
-				// 		ora shake_value
-				// 		sta $d011
-				// 		//cli
-				// 	}
-
-				// 	vic_waitBottom();
-
-				// }
-
-
+				//TODO necessary?
 				for (byte i=0;i<40;i++) {
 					sidfx_loop();
-
 				}
 
-				//*(char*)0xd011 = old_d011;
 				vic_waitBottom();
-				set_d011(3);
+				set_vert_scroll(3);//set scroll to neutral position
 
-				//vspr_set(VS_BARREL_OFFSET,BARREL_X,BARREL_Y,SPRITE_OFFSET+19,
-				//		VCOL_LT_RED);
 				vspr_hide(VS_BARREL_OFFSET);
 				update_vsprites();
 
 				vic.color_back=VCOL_LT_BLUE;
 
-				center_message(s"you have been sabotaged!",10);
-				center_message(s"your game is over",11);
-				center_message(s"press fire to continue",14);
+				center_message(SABOTAGED_MSG_LINE1,10);
+				center_message(SABOTAGED_MSG_LINE2,11);
+				center_message(PRESS_FIRE_MSG,14);
 
 				if (score > highscore) {
 					highscore=score;
 					update_onscreen_highscore();
 
-					center_message(s"you got a new high score!",12);
+					center_message(HIGH_SCORE_MSG,12);
 					sidfx_play(1,SIDFXFlagArrival,7);
 
 					//wait to let the SIDFx play for a bit
 					for (byte i=0;i<30;i++) {
 						sidfx_loop();
-						//update_vsprites();
 						vic_waitBottom();
 					}
 				}
-
 
 				wait_for_fire();
 
@@ -284,7 +246,11 @@ int main() {
     return 0;
 }
 
-void set_d011(byte n) {
+/**
+ * n is the vertical screen scroll. 3 is neutral, so <3 is up
+ * 	and >3 is down.
+ */
+void set_vert_scroll(byte n) {
 	__asm {
 		sei
 		lda $d011
@@ -295,7 +261,6 @@ void set_d011(byte n) {
 	}
 }
 
-//#pragma optimize(0)
 void show_messages(const char const *msg1, const char* msg2) {
 	center_message(msg1,10);
 	center_message(msg2,11);
@@ -837,7 +802,6 @@ long inc_score(long val) {
 	return score;
 }
 
-//#pragma optimize(0)
 void update_onscreen_score() {
 	char	score_chars[6];
 	sprintf(score_chars,"%.5ld",score);
@@ -856,24 +820,50 @@ void update_onscreen_highscore() {
 	}
 }
 
-//#pragma optimize(0)
+/**Prints & centers a given message. Message should be in screen codes. 
+ * 	Words or phrases surrounded by <> symbols will be displayed in VCOL_RED.
+ * 	Ex: "you have been <sabotaged>".
+*/
 void center_message(const char const *message, byte row) {
-	if (message == NULL) {
+
+	bool use_color=false;
+
+	byte len=0;
+	if ((message == NULL) || ((len=strlen(message))==0)) {
 		return;
 	}
-	byte len=strlen(message);
-	if (len==0) {
-		return;
-	}
-	byte num_spcs=(40-len)/2;
+	// byte len=strlen(message);
+	// if (len==0) {
+	// 	return;
+	// }
+	byte num_spaces=(40-len)/2;
 
+	int array_offset=0;
+	int screen_offset=row*40+num_spaces;
 
-	for (byte b=0;b<len;b++) {
-		screen[row*40+num_spcs+b]=message[b];		
+	while (array_offset<len) {
+	//for (byte b=0;b<len;b++) {
+		byte b=message[array_offset++];
+
+		if (b==s'<') {
+			use_color=true;
+			continue;
+		}
+		else if (b==s'>') {
+			use_color=false;
+			continue;
+		}
+		//int offset=row*40+num_spaces+b;
+		screen[screen_offset]=b;
+		if (use_color) {
+			color[screen_offset]=VCOL_RED;
+		}
+		//if !use_color, then keep the existing color map cell for that space
+		
+		screen_offset++;
 	}
 }
 
-//#pragma optimize(0)
 inline void erase_message(byte row) {
 	//39 space chars
 	const char empty_msg[]=s"                                       ";
@@ -899,7 +889,6 @@ void wait_for_fire() {
 	}
 }
 
-//#pragma optimize(0)
 //end_row, end_col are inclusive
 byte count_landed_troopers(byte start_row, byte start_col, byte end_row, byte end_col) {
 	byte troopers_found=0;
@@ -932,29 +921,6 @@ void reset_landed_trooper_color(byte new_color) {
 
 }
 
-// byte petscii_to_screen_char(byte c) {
-//     // Uppercase A-Z (PETSCII $C1-$DA) -> Screen codes $01-$1A
-//     if (c >= 0xC1 && c <= 0xDA) {
-//         return c - 0x40;
-//     }
-//     // Lowercase a-z (PETSCII $61-$7A) -> Screen codes $01-$1A
-//     // Note: This matches the default C64 character set mapping
-//     else if (c >= 0x61 && c <= 0x7A) {
-//         return c - 0x20;
-//     }
-//     // Graphics characters and other ranges
-//     else if (c >= 0x40 && c <= 0x5F) {
-//         return c - 0x40;
-//     }
-//     else if (c >= 0x80 && c <= 0xBF) {
-//         return c - 0x80;
-//     }
-//     else if (c >= 0xC0 && c <= 0xFE) {
-//         return c - 0xC0;
-//     }
-//     // Leave numbers ($30-$39), punctuation, and control codes unchanged
-//     return c;
-// }
 
 /**
  * Only works to convert lowercase ASCII to uppercase screen codes, for the C64 UPPER/GRAPHICS charset.
@@ -964,9 +930,7 @@ inline byte petscii_to_screen_char(byte c) {
 	if (c>='a' && (c<='z')) {
 		c-=96;
 	}
-	// else if (c>='0' && c<='9') {
-	// 	c-=48;
-	// }
+
 	return c;
 }
 
